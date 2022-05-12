@@ -1,0 +1,9 @@
+**/node_modules/
+launch.json
+/dist/
+/.vscode/
+/documentation
+.nyc_output/
+coverage/
+package-lock.json
+tmp
