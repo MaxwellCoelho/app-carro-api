@@ -1,23 +1,11 @@
 import { config } from '../config/config';
-import * as mongoose from 'mongoose';
+import { customerModel, roleModel } from '../models/customer.model';
 
 export class CustomerService {
   public conf = config;
 
-  // SCHEMAS
-  public customersSchema = new mongoose.Schema(
-    { _id: String, name: String, role: String }
-  );
-  public rolesSchema = new mongoose.Schema(
-    { _id: String, name: String, level: Number }
-  );
-
-  // MODELS
-  public customers = mongoose.model('customers', this.customersSchema);
-  public roles = mongoose.model('roles', this.rolesSchema);
-
   public async getCustomers(): Promise<Object> {
-    const responseModel = await this.customers.find().then(entries => {
+    const responseModel = await customerModel.find().then(entries => {
       return {
         "statusCode": 200,
         customers: entries
@@ -27,11 +15,35 @@ export class CustomerService {
     return Promise.resolve(responseModel);
   }
 
+  public async setCustomer(req: Request): Promise<Object> {
+    const createdPost = new customerModel(req);
+    const responseModel = await createdPost.save().then(savedPost  => {
+      return {
+        "statusCode": 200,
+        saved: savedPost
+      }
+    });
+
+    return Promise.resolve(responseModel);
+  }
+
   public async getRoles(): Promise<Object> {
-    const responseModel = await this.roles.find().then(entries => {
+    const responseModel = await roleModel.find().then(entries => {
       return {
         "statusCode": 200,
         roles: entries
+      }
+    });
+
+    return Promise.resolve(responseModel);
+  }
+
+  public async setRole(req: Request): Promise<Object> {
+    const createdPost = new roleModel(req);
+    const responseModel = await createdPost.save().then(savedPost  => {
+      return {
+        "statusCode": 200,
+        saved: savedPost
       }
     });
 

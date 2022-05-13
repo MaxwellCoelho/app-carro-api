@@ -26,6 +26,16 @@ export class CarController extends ResponseModule {
     }
   }
 
+  public async saveCategory(req: Request, res: Response) {
+    try {
+      const responseService = await this.carService.setCategory(req.body);
+      return this.success(res, responseService);
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.internalServerError(res);
+    }
+  }
+
   public async returnBrands(req: Request, res: Response) {
     try {
       const responseService = await this.carService.getBrands();
@@ -36,9 +46,29 @@ export class CarController extends ResponseModule {
     }
   }
 
+  public async saveBrand(req: Request, res: Response) {
+    try {
+      const responseService = await this.carService.setBrand(req.body);
+      return this.success(res, responseService);
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.internalServerError(res);
+    }
+  }
+
   public async returnModels(req: Request, res: Response) {
     try {
       const responseService = await this.carService.getModels();
+      return this.success(res, responseService);
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.internalServerError(res);
+    }
+  }
+
+  public async saveModel(req: Request, res: Response) {
+    try {
+      const responseService = await this.carService.setModel(req.body);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);

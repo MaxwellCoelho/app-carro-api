@@ -1,27 +1,11 @@
 import { config } from '../config/config';
-import * as mongoose from 'mongoose';
+import { categoryModel, brandModel, modelModel } from '../models/car.model';
 
 export class CarService {
   public conf = config;
 
-  // SCHEMAS
-  public categorySchema = new mongoose.Schema(
-    { _id: String, name: String }
-  );
-  public brandSchema = new mongoose.Schema(
-    { _id: String, name: String, image: String }
-  );
-  public modelSchema = new mongoose.Schema(
-    { _id: String, name: String, brand: String, category: String, image: String }
-  );
-
-  // MODELS
-  public category = mongoose.model('carcategories', this.categorySchema);
-  public brand = mongoose.model('carbrands', this.brandSchema);
-  public model = mongoose.model('carmodels', this.modelSchema);
-
   public async getCategories(): Promise<Object> {
-    const responseModel = await this.category.find().then(entries => {
+    const responseModel = await categoryModel.find().then(entries => {
       return {
         "statusCode": 200,
         categories: entries
@@ -31,8 +15,20 @@ export class CarService {
     return Promise.resolve(responseModel);
   }
 
+  public async setCategory(req: Request): Promise<Object> {
+    const createdPost = new categoryModel(req);
+    const responseModel = await createdPost.save().then(savedPost  => {
+      return {
+        "statusCode": 200,
+        saved: savedPost
+      }
+    });
+
+    return Promise.resolve(responseModel);
+  }
+
   public async getBrands(): Promise<Object> {
-    const responseModel = await this.brand.find().then(entries => {
+    const responseModel = await brandModel.find().then(entries => {
       return {
         "statusCode": 200,
         brands: entries
@@ -42,11 +38,35 @@ export class CarService {
     return Promise.resolve(responseModel);
   }
 
+  public async setBrand(req: Request): Promise<Object> {
+    const createdPost = new brandModel(req);
+    const responseModel = await createdPost.save().then(savedPost  => {
+      return {
+        "statusCode": 200,
+        saved: savedPost
+      }
+    });
+
+    return Promise.resolve(responseModel);
+  }
+
   public async getModels(): Promise<Object> {
-    const responseModel = await this.model.find().then(entries => {
+    const responseModel = await modelModel.find().then(entries => {
       return {
         "statusCode": 200,
         models: entries
+      }
+    });
+
+    return Promise.resolve(responseModel);
+  }
+
+  public async setModel(req: Request): Promise<Object> {
+    const createdPost = new modelModel(req);
+    const responseModel = await createdPost.save().then(savedPost  => {
+      return {
+        "statusCode": 200,
+        saved: savedPost
       }
     });
 
