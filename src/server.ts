@@ -1,5 +1,6 @@
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
+import * as mongoose from 'mongoose';
 
 import { UDate } from './utils';
 import { config } from './config/config';
@@ -7,16 +8,22 @@ import { config } from './config/config';
 // Routes
 import {
     TestRoutes,
+    CustomerRoutes,
+    CarRoutes,
 } from './routes';
 
 // Services
 import {
     TestService,
+    CustomerService,
+    CarService,
 } from './services';
 
 // Controllers
 import {
     TestController,
+    CustomerController,
+    CarController,
 } from './controllers';
 
 const PORT = config.PORT;
@@ -24,12 +31,18 @@ const PORT = config.PORT;
 // Instancia dos serviços a serem injetados nos controllers
 const uDate = new UDate();
 const testService = new TestService();
+const customerService = new CustomerService();
+const carService = new CarService();
 
 // Instancia dos componentes injetáveis
 const testController = new TestController(testService, uDate);
+const customerController = new CustomerController(customerService, uDate);
+const carController = new CarController(carService, uDate);
 
 // INSTANCIA DAS ROTAS
 const testRoute = new TestRoutes(testController);
+const customerRoute = new CustomerRoutes(customerController);
+const carRoute = new CarRoutes(carController);
 
 const server = express();
 
@@ -49,6 +62,11 @@ server.use((req, res, next) => {
 
 // Injeção das rotas no server
 testRoute.route(server);
+customerRoute.route(server);
+carRoute.route(server);
+
+// Conexão com base de dados
+mongoose.connect('mongodb://localhost:27017/appcarrodb');
 
 server.listen(PORT, () => {
     uDate.timeConsoleLog(`Server running at http://localhost:${PORT}`);
