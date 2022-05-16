@@ -4,49 +4,78 @@ import { customerModel, roleModel } from '../models/customer.model';
 export class CustomerService {
   public conf = config;
 
-  public async getCustomers(): Promise<Object> {
-    const responseModel = await customerModel.find().then(entries => {
-      return {
-        "statusCode": 200,
-        customers: entries
-      }
-    });
+  // CUSTOMERS ---------------------------------------------------
+  public async getCustomers(id?: string): Promise<Object> {
+    let filter = id ? { _id: id } : {};
+    const res = await customerModel.find(filter).then(entries => entries);
 
-    return Promise.resolve(responseModel);
+    return res.length
+      ? Promise.resolve(res)
+      : Promise.reject({ statusCode: 404 });
   }
 
-  public async setCustomer(req: Request): Promise<Object> {
-    const createdPost = new customerModel(req);
-    const responseModel = await createdPost.save().then(savedPost  => {
-      return {
-        "statusCode": 200,
-        saved: savedPost
-      }
-    });
+  public async setCustomer(req: Request, id?: string): Promise<Object> {
+    let exists = id ? await this.getCustomers(id) : null;
 
-    return Promise.resolve(responseModel);
+    if (id && !exists) {
+      return Promise.reject({ statusCode: 404 });
+    }
+
+    let res;
+
+    if (exists) {
+      res = await customerModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+    } else {
+      const createdPost = new customerModel(req);
+      res = await createdPost.save().then(savedPost => savedPost);
+    }
+
+    return Promise.resolve(res);
   }
 
-  public async getRoles(): Promise<Object> {
-    const responseModel = await roleModel.find().then(entries => {
-      return {
-        "statusCode": 200,
-        roles: entries
-      }
-    });
+  public async deleteCustomer(id: string): Promise<Object> {
+    const res = await customerModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
 
-    return Promise.resolve(responseModel);
+    return res
+      ? Promise.resolve(res)
+      : Promise.reject({ statusCode: 404 });
   }
 
-  public async setRole(req: Request): Promise<Object> {
-    const createdPost = new roleModel(req);
-    const responseModel = await createdPost.save().then(savedPost  => {
-      return {
-        "statusCode": 200,
-        saved: savedPost
-      }
-    });
+  
+  // ROLES ---------------------------------------------------
+  public async getRoles(id?: string): Promise<Object> {
+    const filter = id ? { _id: id } : {};
+    const res = await roleModel.find(filter).then(entries => entries);
 
-    return Promise.resolve(responseModel);
+    return res.length
+      ? Promise.resolve(res)
+      : Promise.reject({ statusCode: 404 });
+  }
+
+  public async setRole(req: Request, id?: string): Promise<Object> {
+    let exists = id ? await this.getRoles(id) : null;
+
+    if (id && !exists) {
+      return Promise.reject({ statusCode: 404 });
+    }
+
+    let res;
+
+    if (exists) {
+      res = await roleModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+    } else {
+      const createdPost = new roleModel(req);
+      res = await createdPost.save().then(savedPost => savedPost);
+    }
+
+    return Promise.resolve(res);
+  }
+
+  public async deleteRole(id: string): Promise<Object> {
+    const res = await roleModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+
+    return res
+      ? Promise.resolve(res)
+      : Promise.reject({ statusCode: 404 });
   }
 }

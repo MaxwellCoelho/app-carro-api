@@ -7,16 +7,24 @@ export class CustomerRoutes {
     constructor(private customerController: CustomerController) {}
 
     public route(app) {
-        app.get('/api/customers', 
-            async (req: Request, res: Response) => this.customerController.returnCustomers(req, res));
+        // CUSTOMERS ---------------------------------------------------
+        app.get(['/api/customers', '/api/customers/:id'],
+            async (req: Request, res: Response) => this.customerController.returnCustomer(req, res));
             
-        app.post('/api/customers/new', 
+        app.post(['/api/customers', '/api/customers/:id'],
             async (req: Request, res: Response) => this.customerController.saveCustomer(req, res));
 
-        app.get('/api/customers/roles', 
-            async (req: Request, res: Response) => this.customerController.returnRoles(req, res));
+        app.delete('/api/customers/:id', 
+            async (req: Request, res: Response) => this.customerController.removeCustomer(req, res));
 
-        app.post('/api/customers/roles/new', 
+        // ROLES ---------------------------------------------------
+        app.get(['/api/roles', '/api/roles/:id'],
+            async (req: Request, res: Response) => this.customerController.returnRole(req, res));
+
+        app.post(['/api/roles', '/api/roles/:id'], 
             async (req: Request, res: Response) => this.customerController.saveRole(req, res));
+
+        app.delete('/api/roles/:id', 
+            async (req: Request, res: Response) => this.customerController.removeRole(req, res));
     }
 }
