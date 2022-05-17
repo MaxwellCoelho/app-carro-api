@@ -16,10 +16,13 @@ export class CarController extends ResponseModule {
       super();
   }
 
-  public async returnCategories(req: Request, res: Response) {
+  // CATEGORIES ---------------------------------------------------
+  public async returnCategory(req: Request, res: Response) {
+    const id: string = req.params.id;
+
     try {
-      const responseService = await this.carService.getCategories();
-      return this.success(res, responseService);
+      const responseService = await this.carService.getCategories(id);
+      return this.success(res, { categories: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.internalServerError(res);
@@ -27,19 +30,37 @@ export class CarController extends ResponseModule {
   }
 
   public async saveCategory(req: Request, res: Response) {
+    const id: string = req.params.id;
+
     try {
-      const responseService = await this.carService.setCategory(req.body);
-      return this.success(res, responseService);
+      const currentTime = this.uDate.getCurrentDateTimeString();
+      const responseService = await this.carService.setCategory(req.body, currentTime, id);
+      return this.success(res, { saved: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.internalServerError(res);
     }
   }
 
-  public async returnBrands(req: Request, res: Response) {
+  public async removeCategory(req: Request, res: Response) {
+    const id: string = req.params.id;
+
     try {
-      const responseService = await this.carService.getBrands();
-      return this.success(res, responseService);
+      const responseService = await this.carService.deleteCategory(id);
+      return this.success(res, { removed: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.notFound(res);
+    }
+  }
+
+  // BRANDS ---------------------------------------------------
+  public async returnBrand(req: Request, res: Response) {
+    const id: string = req.params.id;
+
+    try {
+      const responseService = await this.carService.getBrands(id);
+      return this.success(res, { brands: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.internalServerError(res);
@@ -47,19 +68,37 @@ export class CarController extends ResponseModule {
   }
 
   public async saveBrand(req: Request, res: Response) {
+    const id: string = req.params.id;
+
     try {
-      const responseService = await this.carService.setBrand(req.body);
-      return this.success(res, responseService);
+      const currentTime = this.uDate.getCurrentDateTimeString();
+      const responseService = await this.carService.setBrand(req.body, currentTime, id);
+      return this.success(res, { saved: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.internalServerError(res);
     }
   }
 
-  public async returnModels(req: Request, res: Response) {
+  public async removeBrand(req: Request, res: Response) {
+    const id: string = req.params.id;
+
     try {
-      const responseService = await this.carService.getModels();
-      return this.success(res, responseService);
+      const responseService = await this.carService.deleteBrand(id);
+      return this.success(res, { removed: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.notFound(res);
+    }
+  }
+
+  // MODELS ---------------------------------------------------
+  public async returnModel(req: Request, res: Response) {
+    const id: string = req.params.id;
+
+    try {
+      const responseService = await this.carService.getModels(id);
+      return this.success(res, { models: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.internalServerError(res);
@@ -67,12 +106,27 @@ export class CarController extends ResponseModule {
   }
 
   public async saveModel(req: Request, res: Response) {
+    const id: string = req.params.id;
+
     try {
-      const responseService = await this.carService.setModel(req.body);
-      return this.success(res, responseService);
+      const currentTime = this.uDate.getCurrentDateTimeString();
+      const responseService = await this.carService.setModel(req.body, currentTime, id);
+      return this.success(res, { saved: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.internalServerError(res);
+    }
+  }
+
+  public async removeModel(req: Request, res: Response) {
+    const id: string = req.params.id;
+
+    try {
+      const responseService = await this.carService.deleteModel(id);
+      return this.success(res, { removed: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.notFound(res);
     }
   }
   
