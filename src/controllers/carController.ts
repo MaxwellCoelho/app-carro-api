@@ -33,7 +33,8 @@ export class CarController extends ResponseModule {
     const id: string = req.params.id;
 
     try {
-      const responseService = await this.carService.setCategory(req.body, id);
+      const currentTime = this.uDate.getCurrentDateTimeString();
+      const responseService = await this.carService.setCategory(req.body, currentTime, id);
       return this.success(res, { saved: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -70,7 +71,8 @@ export class CarController extends ResponseModule {
     const id: string = req.params.id;
 
     try {
-      const responseService = await this.carService.setBrand(req.body, id);
+      const currentTime = this.uDate.getCurrentDateTimeString();
+      const responseService = await this.carService.setBrand(req.body, currentTime, id);
       return this.success(res, { saved: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -107,7 +109,8 @@ export class CarController extends ResponseModule {
     const id: string = req.params.id;
 
     try {
-      const responseService = await this.carService.setModel(req.body, id);
+      const currentTime = this.uDate.getCurrentDateTimeString();
+      const responseService = await this.carService.setModel(req.body, currentTime, id);
       return this.success(res, { saved: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);

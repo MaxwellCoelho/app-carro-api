@@ -14,7 +14,7 @@ export class CarService {
       : Promise.reject({ statusCode: 404 });
   }
 
-  public async setCategory(req: Request, id?: string): Promise<Object> {
+  public async setCategory(req: Request, currentTime: string, id?: string): Promise<Object> {
     let exists = id ? await this.getCategories(id) : null;
 
     if (id && !exists) {
@@ -24,9 +24,12 @@ export class CarService {
     let res;
 
     if (exists) {
-      res = await categoryModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+      const modifiedPost = { ...req, modified: currentTime };
+      res = await categoryModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new categoryModel(req);
+      createdPost.created = currentTime;
+      createdPost.modified = currentTime;
       res = await createdPost.save().then(savedPost => savedPost);
     }
 
@@ -51,7 +54,7 @@ export class CarService {
       : Promise.reject({ statusCode: 404 });
   }
 
-  public async setBrand(req: Request, id?: string): Promise<Object> {
+  public async setBrand(req: Request, currentTime: string, id?: string): Promise<Object> {
     let exists = id ? await this.getBrands(id) : null;
 
     if (id && !exists) {
@@ -61,9 +64,12 @@ export class CarService {
     let res;
 
     if (exists) {
-      res = await brandModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+      const modifiedPost = { ...req, modified: currentTime };
+      res = await brandModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new brandModel(req);
+      createdPost.created = currentTime;
+      createdPost.modified = currentTime;
       res = await createdPost.save().then(savedPost => savedPost);
     }
 
@@ -88,8 +94,8 @@ export class CarService {
       : Promise.reject({ statusCode: 404 });
   }
 
-  public async setModel(req: Request, id?: string): Promise<Object> {
-    let exists = id ? await this.getBrands(id) : null;
+  public async setModel(req: Request, currentTime: string, id?: string): Promise<Object> {
+    let exists = id ? await this.getModels(id) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });
@@ -98,9 +104,12 @@ export class CarService {
     let res;
 
     if (exists) {
-      res = await modelModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+      const modifiedPost = { ...req, modified: currentTime };
+      res = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new modelModel(req);
+      createdPost.created = currentTime;
+      createdPost.modified = currentTime;
       res = await createdPost.save().then(savedPost => savedPost);
     }
 
