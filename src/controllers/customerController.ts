@@ -42,16 +42,16 @@ export class CustomerController extends ResponseModule {
   }
 
   public async removeCustomer(req: Request, res: Response) {
-      const id: string = req.params.id;
+    const id: string = req.params.id;
 
-      try {
-        const responseService = await this.customerService.deleteCustomer(id);
-        return this.success(res, { saved: responseService });
-      } catch (error) {
-        this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-        return this.notFound(res);
-      }
+    try {
+      const responseService = await this.customerService.deleteCustomer(id);
+      return this.success(res, { removed: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.notFound(res);
     }
+  }
 
   // ROLES ---------------------------------------------------
   public async returnRole(req: Request, res: Response) {
@@ -83,7 +83,7 @@ export class CustomerController extends ResponseModule {
 
     try {
       const responseService = await this.customerService.deleteRole(id);
-      return this.success(res, { saved: responseService });
+      return this.success(res, { removed: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.notFound(res);

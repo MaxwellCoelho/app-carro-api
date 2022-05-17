@@ -1,19 +1,29 @@
 import * as mongoose from 'mongoose';
 
 const categorySchema = new mongoose.Schema({
-    name: String
+    name: String,
+    created_by: String,
+    created_when: String,
+    active: Boolean
 });
 
 const brandSchema = new mongoose.Schema({
     name: String,
-    image: String
+    image: String,
+    created_by: String,
+    created_when: String,
+    active: Boolean
 });
 
 const modelSchema = new mongoose.Schema({
     name: String,
     brand: String,
     category: String,
-    image: String
+    fab_year: Number,
+    image: String,
+    created_by: String,
+    created_when: String,
+    active: Boolean
 });
 
 export const categoryModel = mongoose.model('carcategories', categorySchema);

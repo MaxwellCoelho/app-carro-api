@@ -4,7 +4,7 @@ const customersSchema = new mongoose.Schema({
     name: String,
     role: String,
     active: Boolean,
-    since: String
+    created_when: String
 });
 
 const rolesSchema = new mongoose.Schema({

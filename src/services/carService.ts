@@ -4,72 +4,115 @@ import { categoryModel, brandModel, modelModel } from '../models/car.model';
 export class CarService {
   public conf = config;
 
-  public async getCategories(): Promise<Object> {
-    const responseModel = await categoryModel.find().then(entries => {
-      return {
-        "statusCode": 200,
-        categories: entries
-      }
-    });
-
-    return Promise.resolve(responseModel);
+  // CATEGORIES ---------------------------------------------------
+  public async getCategories(id?: string): Promise<Object> {
+    let filter = id ? { _id: id } : {};
+    const res = await categoryModel.find(filter).then(entries => entries);
+  
+    return res.length
+      ? Promise.resolve(res)
+      : Promise.reject({ statusCode: 404 });
   }
 
-  public async setCategory(req: Request): Promise<Object> {
-    const createdPost = new categoryModel(req);
-    const responseModel = await createdPost.save().then(savedPost  => {
-      return {
-        "statusCode": 200,
-        saved: savedPost
-      }
-    });
+  public async setCategory(req: Request, id?: string): Promise<Object> {
+    let exists = id ? await this.getCategories(id) : null;
 
-    return Promise.resolve(responseModel);
+    if (id && !exists) {
+      return Promise.reject({ statusCode: 404 });
+    }
+
+    let res;
+
+    if (exists) {
+      res = await categoryModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+    } else {
+      const createdPost = new categoryModel(req);
+      res = await createdPost.save().then(savedPost => savedPost);
+    }
+
+    return Promise.resolve(res);
   }
 
-  public async getBrands(): Promise<Object> {
-    const responseModel = await brandModel.find().then(entries => {
-      return {
-        "statusCode": 200,
-        brands: entries
-      }
-    });
+  public async deleteCategory(id: string): Promise<Object> {
+    const res = await categoryModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
 
-    return Promise.resolve(responseModel);
+    return res
+      ? Promise.resolve(res)
+      : Promise.reject({ statusCode: 404 });
   }
 
-  public async setBrand(req: Request): Promise<Object> {
-    const createdPost = new brandModel(req);
-    const responseModel = await createdPost.save().then(savedPost  => {
-      return {
-        "statusCode": 200,
-        saved: savedPost
-      }
-    });
-
-    return Promise.resolve(responseModel);
+  // BRANDS ---------------------------------------------------
+  public async getBrands(id?: string): Promise<Object> {
+    let filter = id ? { _id: id } : {};
+    const res = await brandModel.find(filter).then(entries => entries);
+    
+    return res.length
+      ? Promise.resolve(res)
+      : Promise.reject({ statusCode: 404 });
   }
 
-  public async getModels(): Promise<Object> {
-    const responseModel = await modelModel.find().then(entries => {
-      return {
-        "statusCode": 200,
-        models: entries
-      }
-    });
+  public async setBrand(req: Request, id?: string): Promise<Object> {
+    let exists = id ? await this.getBrands(id) : null;
 
-    return Promise.resolve(responseModel);
+    if (id && !exists) {
+      return Promise.reject({ statusCode: 404 });
+    }
+
+    let res;
+
+    if (exists) {
+      res = await brandModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+    } else {
+      const createdPost = new brandModel(req);
+      res = await createdPost.save().then(savedPost => savedPost);
+    }
+
+    return Promise.resolve(res);
   }
 
-  public async setModel(req: Request): Promise<Object> {
-    const createdPost = new modelModel(req);
-    const responseModel = await createdPost.save().then(savedPost  => {
-      return {
-        "statusCode": 200,
-        saved: savedPost
-      }
-    });
+  public async deleteBrand(id: string): Promise<Object> {
+    const res = await brandModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
 
-    return Promise.resolve(responseModel);
+    return res
+      ? Promise.resolve(res)
+      : Promise.reject({ statusCode: 404 });
   }
+
+  // MODELS ---------------------------------------------------
+  public async getModels(id?: string): Promise<Object> {
+    let filter = id ? { _id: id } : {};
+    const res = await modelModel.find(filter).then(entries => entries);
+    
+    return res.length
+      ? Promise.resolve(res)
+      : Promise.reject({ statusCode: 404 });
+  }
+
+  public async setModel(req: Request, id?: string): Promise<Object> {
+    let exists = id ? await this.getBrands(id) : null;
+
+    if (id && !exists) {
+      return Promise.reject({ statusCode: 404 });
+    }
+
+    let res;
+
+    if (exists) {
+      res = await modelModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+    } else {
+      const createdPost = new modelModel(req);
+      res = await createdPost.save().then(savedPost => savedPost);
+    }
+
+    return Promise.resolve(res);
+  }
+
+  public async deleteModel(id: string): Promise<Object> {
+    const res = await modelModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+
+    return res
+      ? Promise.resolve(res)
+      : Promise.reject({ statusCode: 404 });
+  }
+
 }

@@ -7,22 +7,34 @@ export class CarRoutes {
     constructor(private carController: CarController) {}
 
     public route(app) {
-        app.get('/api/cars/categories', 
-            async (req: Request, res: Response) => this.carController.returnCategories(req, res));
+        // CATEGORIES ---------------------------------------------------
+        app.get(['/api/cars/categories', '/api/cars/categories/:id'], 
+            async (req: Request, res: Response) => this.carController.returnCategory(req, res));
 
-        app.post('/api/cars/categories/new', 
+        app.post(['/api/cars/categories', '/api/cars/categories/:id'],
             async (req: Request, res: Response) => this.carController.saveCategory(req, res));
 
-        app.get('/api/cars/brands', 
-            async (req: Request, res: Response) => this.carController.returnBrands(req, res));
+        app.delete('/api/cars/categories/:id', 
+            async (req: Request, res: Response) => this.carController.removeCategory(req, res));
 
-        app.post('/api/cars/brands/new', 
+        // BRANDS ---------------------------------------------------
+        app.get(['/api/cars/brands', '/api/cars/brands/:id'], 
+            async (req: Request, res: Response) => this.carController.returnBrand(req, res));
+
+        app.post(['/api/cars/brands', '/api/cars/brands/:id'], 
             async (req: Request, res: Response) => this.carController.saveBrand(req, res));
         
-        app.get('/api/cars/models', 
-            async (req: Request, res: Response) => this.carController.returnModels(req, res));
+        app.delete('/api/cars/brands/:id', 
+            async (req: Request, res: Response) => this.carController.removeBrand(req, res));
+        
+        // MODELS ---------------------------------------------------
+        app.get(['/api/cars/models', '/api/cars/models/:id'], 
+            async (req: Request, res: Response) => this.carController.returnModel(req, res));
 
-        app.post('/api/cars/models/new', 
+        app.post(['/api/cars/models', '/api/cars/models/:id'], 
             async (req: Request, res: Response) => this.carController.saveModel(req, res));
+
+        app.delete('/api/cars/models/:id', 
+            async (req: Request, res: Response) => this.carController.removeModel(req, res));
     }
 }
