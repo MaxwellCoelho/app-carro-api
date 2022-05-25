@@ -59,20 +59,24 @@ export class CustomerService {
       return Promise.reject({ statusCode: 404 });
     }
 
-    let res;
+    let res = {};
 
     if (exists) {
-      res = await roleModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await roleModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new roleModel(req);
-      res = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
+
+    res['roles'] = await this.getRoles();
 
     return Promise.resolve(res);
   }
 
   public async deleteRole(id: string): Promise<Object> {
-    const res = await roleModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    let res = {};
+    res['removed'] = await roleModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['roles'] = await this.getRoles();
 
     return res
       ? Promise.resolve(res)
