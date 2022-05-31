@@ -9,32 +9,47 @@ export class CustomerService {
     let filter = id ? { _id: id } : {};
     const res = await customerModel.find(filter).then(entries => entries);
 
+    for (const item of res) {
+      await this.getRoles(item.role).then(role => {
+        if (role[0]) {
+          item.role = role[0];
+        }
+      });      
+    }
+
     return res.length
       ? Promise.resolve(res)
       : Promise.reject({ statusCode: 404 });
   }
 
-  public async setCustomer(req: Request, id?: string): Promise<Object> {
+  public async setCustomer(req: Request, currentTime: string, id?: string): Promise<Object> {
     let exists = id ? await this.getCustomers(id) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });
     }
 
-    let res;
+    let res = {};
 
     if (exists) {
-      res = await customerModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+      const modifiedPost = { ...req, modified: currentTime };
+      res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new customerModel(req);
-      res = await createdPost.save().then(savedPost => savedPost);
+      createdPost.created = currentTime;
+      createdPost.modified = currentTime;
+      res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
+
+    res['customers'] = await this.getCustomers();
 
     return Promise.resolve(res);
   }
 
   public async deleteCustomer(id: string): Promise<Object> {
-    const res = await customerModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    let res = {};
+    res['removed'] = await customerModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['customers'] = await this.getCustomers();
 
     return res
       ? Promise.resolve(res)
@@ -52,7 +67,7 @@ export class CustomerService {
       : Promise.reject({ statusCode: 404 });
   }
 
-  public async setRole(req: Request, id?: string): Promise<Object> {
+  public async setRole(req: Request, currentTime: string, id?: string): Promise<Object> {
     let exists = id ? await this.getRoles(id) : null;
 
     if (id && !exists) {
@@ -62,9 +77,12 @@ export class CustomerService {
     let res = {};
 
     if (exists) {
-      res['saved'] = await roleModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+      const modifiedPost = { ...req, modified: currentTime };
+      res['saved'] = await roleModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new roleModel(req);
+      createdPost.created = currentTime;
+      createdPost.modified = currentTime;
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 

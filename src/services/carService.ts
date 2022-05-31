@@ -21,23 +21,27 @@ export class CarService {
       return Promise.reject({ statusCode: 404 });
     }
 
-    let res;
+    let res = {};
 
     if (exists) {
       const modifiedPost = { ...req, modified: currentTime };
-      res = await categoryModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await categoryModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new categoryModel(req);
       createdPost.created = currentTime;
       createdPost.modified = currentTime;
-      res = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
+
+    res['categories'] = await this.getCategories();
 
     return Promise.resolve(res);
   }
 
   public async deleteCategory(id: string): Promise<Object> {
-    const res = await categoryModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    let res = {};
+    res['removed'] = await categoryModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['categories'] = await this.getCategories();
 
     return res
       ? Promise.resolve(res)
@@ -61,23 +65,27 @@ export class CarService {
       return Promise.reject({ statusCode: 404 });
     }
 
-    let res;
+    let res = {};
 
     if (exists) {
       const modifiedPost = { ...req, modified: currentTime };
-      res = await brandModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await brandModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new brandModel(req);
       createdPost.created = currentTime;
       createdPost.modified = currentTime;
-      res = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
+
+    res['brands'] = await this.getBrands();
 
     return Promise.resolve(res);
   }
 
   public async deleteBrand(id: string): Promise<Object> {
-    const res = await brandModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    let res = {};
+    res['removed'] = await brandModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['brands'] = await this.getBrands();
 
     return res
       ? Promise.resolve(res)
@@ -88,6 +96,20 @@ export class CarService {
   public async getModels(id?: string): Promise<Object> {
     let filter = id ? { _id: id } : {};
     const res = await modelModel.find(filter).then(entries => entries);
+
+    for (const item of res) {
+      await this.getBrands(item.brand).then(brand => {
+        if (brand[0]) {
+          item.brand = brand[0];
+        }
+      });
+      
+      await this.getCategories(item.category).then(category => {
+        if (category[0]) {
+          item.category = category[0];
+        }
+      }); 
+    }
     
     return res.length
       ? Promise.resolve(res)
@@ -101,23 +123,27 @@ export class CarService {
       return Promise.reject({ statusCode: 404 });
     }
 
-    let res;
+    let res = {};
 
     if (exists) {
       const modifiedPost = { ...req, modified: currentTime };
-      res = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new modelModel(req);
       createdPost.created = currentTime;
       createdPost.modified = currentTime;
-      res = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
+
+    res['models'] = await this.getModels();
 
     return Promise.resolve(res);
   }
 
   public async deleteModel(id: string): Promise<Object> {
-    const res = await modelModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    let res = {};
+    res['removed'] = await modelModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['models'] = await this.getModels();
 
     return res
       ? Promise.resolve(res)

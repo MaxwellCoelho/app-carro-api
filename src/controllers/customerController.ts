@@ -25,7 +25,7 @@ export class CustomerController extends ResponseModule {
       return this.success(res, { customers: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.internalServerError(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
 
@@ -33,11 +33,12 @@ export class CustomerController extends ResponseModule {
     const id: string = req.params.id;
 
     try {
-      const responseService = await this.customerService.setCustomer(req.body, id);
-      return this.success(res, { saved: responseService });
+      const currentTime = this.uDate.getCurrentDateTimeString();
+      const responseService = await this.customerService.setCustomer(req.body, currentTime, id);
+      return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.internalServerError(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
 
@@ -46,10 +47,10 @@ export class CustomerController extends ResponseModule {
 
     try {
       const responseService = await this.customerService.deleteCustomer(id);
-      return this.success(res, { removed: responseService });
+      return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.notFound(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
 
@@ -70,7 +71,8 @@ export class CustomerController extends ResponseModule {
     const id: string = req.params.id;
 
     try {
-      const responseService = await this.customerService.setRole(req.body, id);
+      const currentTime = this.uDate.getCurrentDateTimeString();
+      const responseService = await this.customerService.setRole(req.body, currentTime, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -86,7 +88,7 @@ export class CustomerController extends ResponseModule {
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.notFound(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
   
