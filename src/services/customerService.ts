@@ -9,6 +9,14 @@ export class CustomerService {
     let filter = id ? { _id: id } : {};
     const res = await customerModel.find(filter).then(entries => entries);
 
+    for (const item of res) {
+      await this.getRoles(item.role).then(role => {
+        if (role[0]) {
+          item.role = role[0];
+        }
+      });      
+    }
+
     return res.length
       ? Promise.resolve(res)
       : Promise.reject({ statusCode: 404 });
@@ -21,20 +29,24 @@ export class CustomerService {
       return Promise.reject({ statusCode: 404 });
     }
 
-    let res;
+    let res = {};
 
     if (exists) {
-      res = await customerModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new customerModel(req);
-      res = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
+
+    res['customers'] = await this.getCustomers();
 
     return Promise.resolve(res);
   }
 
   public async deleteCustomer(id: string): Promise<Object> {
-    const res = await customerModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    let res = {};
+    res['removed'] = await customerModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['customers'] = await this.getCustomers();
 
     return res
       ? Promise.resolve(res)

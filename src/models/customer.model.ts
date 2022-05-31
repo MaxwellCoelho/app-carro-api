@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 
 const customersSchema = new mongoose.Schema({
     name: String,
-    role: String,
+    role: Object,
     active: Boolean,
     created_when: String
 });
