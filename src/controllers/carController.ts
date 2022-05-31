@@ -25,7 +25,7 @@ export class CarController extends ResponseModule {
       return this.success(res, { categories: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.internalServerError(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
 
@@ -35,10 +35,10 @@ export class CarController extends ResponseModule {
     try {
       const currentTime = this.uDate.getCurrentDateTimeString();
       const responseService = await this.carService.setCategory(req.body, currentTime, id);
-      return this.success(res, { saved: responseService });
+      return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.internalServerError(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
 
@@ -47,10 +47,10 @@ export class CarController extends ResponseModule {
 
     try {
       const responseService = await this.carService.deleteCategory(id);
-      return this.success(res, { removed: responseService });
+      return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.notFound(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
 
@@ -63,7 +63,7 @@ export class CarController extends ResponseModule {
       return this.success(res, { brands: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.internalServerError(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
 
@@ -73,10 +73,10 @@ export class CarController extends ResponseModule {
     try {
       const currentTime = this.uDate.getCurrentDateTimeString();
       const responseService = await this.carService.setBrand(req.body, currentTime, id);
-      return this.success(res, { saved: responseService });
+      return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.internalServerError(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
 
@@ -85,10 +85,10 @@ export class CarController extends ResponseModule {
 
     try {
       const responseService = await this.carService.deleteBrand(id);
-      return this.success(res, { removed: responseService });
+      return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.notFound(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
 
@@ -101,7 +101,7 @@ export class CarController extends ResponseModule {
       return this.success(res, { models: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.internalServerError(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
 
@@ -111,10 +111,10 @@ export class CarController extends ResponseModule {
     try {
       const currentTime = this.uDate.getCurrentDateTimeString();
       const responseService = await this.carService.setModel(req.body, currentTime, id);
-      return this.success(res, { saved: responseService });
+      return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.internalServerError(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
 
@@ -123,10 +123,10 @@ export class CarController extends ResponseModule {
 
     try {
       const responseService = await this.carService.deleteModel(id);
-      return this.success(res, { removed: responseService });
+      return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.notFound(res);
+      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
     }
   }
   

@@ -22,7 +22,7 @@ export class CustomerService {
       : Promise.reject({ statusCode: 404 });
   }
 
-  public async setCustomer(req: Request, id?: string): Promise<Object> {
+  public async setCustomer(req: Request, currentTime: string, id?: string): Promise<Object> {
     let exists = id ? await this.getCustomers(id) : null;
 
     if (id && !exists) {
@@ -32,9 +32,12 @@ export class CustomerService {
     let res = {};
 
     if (exists) {
-      res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+      const modifiedPost = { ...req, modified: currentTime };
+      res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new customerModel(req);
+      createdPost.created = currentTime;
+      createdPost.modified = currentTime;
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
@@ -64,7 +67,7 @@ export class CustomerService {
       : Promise.reject({ statusCode: 404 });
   }
 
-  public async setRole(req: Request, id?: string): Promise<Object> {
+  public async setRole(req: Request, currentTime: string, id?: string): Promise<Object> {
     let exists = id ? await this.getRoles(id) : null;
 
     if (id && !exists) {
@@ -74,9 +77,12 @@ export class CustomerService {
     let res = {};
 
     if (exists) {
-      res['saved'] = await roleModel.findByIdAndUpdate({ _id: id }, req, { new: true }).then(savedPost => savedPost);
+      const modifiedPost = { ...req, modified: currentTime };
+      res['saved'] = await roleModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new roleModel(req);
+      createdPost.created = currentTime;
+      createdPost.modified = currentTime;
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 

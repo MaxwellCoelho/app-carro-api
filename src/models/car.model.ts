@@ -2,30 +2,33 @@ import * as mongoose from 'mongoose';
 
 const categorySchema = new mongoose.Schema({
     name: String,
-    created_by: String,
+    active: Boolean,
+    created_by: Object,
     created: String,
-    modified: String,
-    active: Boolean
+    modified_by: Object,
+    modified: String
 });
 
 const brandSchema = new mongoose.Schema({
     name: String,
     image: String,
-    created_by: String,
+    active: Boolean,
+    created_by: Object,
     created: String,
-    modified: String,
-    active: Boolean
+    modified_by: Object,
+    modified: String
 });
 
 const modelSchema = new mongoose.Schema({
     name: String,
-    brand: String,
-    category: String,
+    brand: Object,
+    category: Object,
     image: String,
-    created_by: String,
+    active: Boolean,
+    created_by: Object,
     created: String,
-    modified: String,
-    active: Boolean
+    modified_by: Object,
+    modified: String
 });
 
 export const categoryModel = mongoose.model('carcategories', categorySchema);

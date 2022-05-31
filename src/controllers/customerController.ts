@@ -33,7 +33,8 @@ export class CustomerController extends ResponseModule {
     const id: string = req.params.id;
 
     try {
-      const responseService = await this.customerService.setCustomer(req.body, id);
+      const currentTime = this.uDate.getCurrentDateTimeString();
+      const responseService = await this.customerService.setCustomer(req.body, currentTime, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -70,7 +71,8 @@ export class CustomerController extends ResponseModule {
     const id: string = req.params.id;
 
     try {
-      const responseService = await this.customerService.setRole(req.body, id);
+      const currentTime = this.uDate.getCurrentDateTimeString();
+      const responseService = await this.customerService.setRole(req.body, currentTime, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
