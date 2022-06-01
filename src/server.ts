@@ -1,6 +1,7 @@
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as mongoose from 'mongoose';
+import "dotenv/config";
 
 import { UDate } from './utils';
 import { config } from './config/config';
@@ -25,6 +26,11 @@ import {
     CustomerController,
     CarController,
 } from './controllers';
+
+// Conexão com base de dados
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('Connected to database'))
+    .catch(err => console.log(err));
 
 const PORT = config.PORT;
 
@@ -52,6 +58,8 @@ server.use(bodyParser.json());
 server.use(bodyParser.urlencoded({ extended: false }));
 
 server.use((req, res, next) => {
+    req.setTimeout(20000, function(){ next(); });
+
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Credentials', 'false');
     res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
@@ -64,9 +72,6 @@ server.use((req, res, next) => {
 testRoute.route(server);
 customerRoute.route(server);
 carRoute.route(server);
-
-// Conexão com base de dados
-mongoose.connect('mongodb://localhost:27017/appcarrodb');
 
 server.listen(PORT, () => {
     uDate.timeConsoleLog(`Server running at http://localhost:${PORT}`);

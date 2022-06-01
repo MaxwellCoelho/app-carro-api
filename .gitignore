@@ -7,3 +7,4 @@ launch.json
 coverage/
 package-lock.json
 tmp
+.env
