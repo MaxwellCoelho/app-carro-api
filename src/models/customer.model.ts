@@ -3,6 +3,8 @@ import * as mongoose from 'mongoose';
 const customersSchema = new mongoose.Schema({
     name: String,
     role: Object,
+    email: String,
+    password: String,
     active: Boolean,
     created_by: Object,
     created: String,
