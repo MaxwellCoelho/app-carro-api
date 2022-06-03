@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { CarService } from '../services';
+import { CarService, CryptoService } from '../services';
 
 import { ResponseModule } from '../architecture/responseModule';
 import { config } from '../config/config';
@@ -11,6 +11,7 @@ export class CarController extends ResponseModule {
 
   constructor(
       private carService: CarService,
+      public cryptoService: CryptoService,
       private uDate: UDate,
     ) {
       super();
@@ -31,10 +32,18 @@ export class CarController extends ResponseModule {
 
   public async saveCategory(req: Request, res: Response) {
     const id: string = req.params.id;
+    let categoryData;
+
+    try {
+      categoryData = this.cryptoService.decodeJwt(req.body.categoryData);
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.unauthorized(res);
+    }
 
     try {
       const currentTime = this.uDate.getCurrentDateTimeString();
-      const responseService = await this.carService.setCategory(req.body, currentTime, id);
+      const responseService = await this.carService.setCategory(categoryData, currentTime, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -69,10 +78,18 @@ export class CarController extends ResponseModule {
 
   public async saveBrand(req: Request, res: Response) {
     const id: string = req.params.id;
+    let brandData;
+
+    try {
+      brandData = this.cryptoService.decodeJwt(req.body.brandData);
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.unauthorized(res);
+    }
 
     try {
       const currentTime = this.uDate.getCurrentDateTimeString();
-      const responseService = await this.carService.setBrand(req.body, currentTime, id);
+      const responseService = await this.carService.setBrand(brandData, currentTime, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -107,10 +124,18 @@ export class CarController extends ResponseModule {
 
   public async saveModel(req: Request, res: Response) {
     const id: string = req.params.id;
+    let modelData;
+
+    try {
+      modelData = this.cryptoService.decodeJwt(req.body.modelData);
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.unauthorized(res);
+    }
 
     try {
       const currentTime = this.uDate.getCurrentDateTimeString();
-      const responseService = await this.carService.setModel(req.body, currentTime, id);
+      const responseService = await this.carService.setModel(modelData, currentTime, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);

@@ -1,8 +1,13 @@
 import { config } from '../config/config';
 import { customerModel, roleModel } from '../models/customer.model';
+import { CryptoService } from '../services';
 
 export class CustomerService {
   public conf = config;
+
+  constructor(
+    private cryptoService: CryptoService,
+  ) { }
 
   // CUSTOMERS ---------------------------------------------------
   public async getCustomers(id?: string): Promise<Object> {
@@ -33,9 +38,15 @@ export class CustomerService {
 
     if (exists) {
       const modifiedPost = { ...req, modified: currentTime };
+
+      if (modifiedPost['password'] !== exists[0].password) {
+        modifiedPost['password'] = this.cryptoService.encriptPassword(modifiedPost['password']);
+      }
+
       res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
       const createdPost = new customerModel(req);
+      createdPost.password = this.cryptoService.encriptPassword(createdPost.password);
       createdPost.created = currentTime;
       createdPost.modified = currentTime;
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
