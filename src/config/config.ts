@@ -1,5 +1,4 @@
 export const config = {
   production: false,
-  PORT: 3001,
-  jstSecret: '-M@x-caRro$*_+'
+  PORT: 3001
 };

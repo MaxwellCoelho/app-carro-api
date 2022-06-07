@@ -17,12 +17,12 @@ export class CryptoService {
   }
 
   public encondeJwt(payload: any): string {
-    const tokenJwt = payload ? jwt.encode(payload, this.conf.jstSecret) : null;
+    const tokenJwt = payload ? jwt.encode(payload, process.env.JWT_SECRET) : null;
     return tokenJwt;
   }
 
   public decodeJwt(tokenJwt: string): any {
-    const decodedJwt = tokenJwt ? jwt.decode(tokenJwt, this.conf.jstSecret) : null;
+    const decodedJwt = tokenJwt ? jwt.decode(tokenJwt, process.env.JWT_SECRET) : null;
     return decodedJwt;
   }
 }

@@ -31,6 +31,10 @@ export class CarController extends ResponseModule {
   }
 
   public async saveCategory(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+
     const id: string = req.params.id;
     let categoryData;
 
@@ -52,6 +56,10 @@ export class CarController extends ResponseModule {
   }
 
   public async removeCategory(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+
     const id: string = req.params.id;
 
     try {
@@ -77,6 +85,10 @@ export class CarController extends ResponseModule {
   }
 
   public async saveBrand(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+
     const id: string = req.params.id;
     let brandData;
 
@@ -98,6 +110,10 @@ export class CarController extends ResponseModule {
   }
 
   public async removeBrand(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+
     const id: string = req.params.id;
 
     try {
@@ -123,6 +139,10 @@ export class CarController extends ResponseModule {
   }
 
   public async saveModel(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+
     const id: string = req.params.id;
     let modelData;
 
@@ -144,6 +164,10 @@ export class CarController extends ResponseModule {
   }
 
   public async removeModel(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+    
     const id: string = req.params.id;
 
     try {

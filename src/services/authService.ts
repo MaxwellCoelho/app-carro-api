@@ -1,21 +1,24 @@
 import { config } from '../config/config';
-import { customerModel } from '../models/customer.model';
-import { CryptoService } from '../services';
+import { CryptoService, CustomerService } from '../services';
 
 export class AuthService {
   public conf = config;
 
   constructor(
     private cryptoService: CryptoService,
+    private customerService: CustomerService,
   ) { }
 
   public async authUser(authData: any) {
     const filter = { email: authData.email };
-    const res = await customerModel.find(filter).then(entries => entries);
+    const res = await this.customerService.getCustomers(filter);
+    let authorized;
 
-    for (const item of res) {
-        const authenticated = this.cryptoService.checkPassword(authData.password, item.password);
-        console.log('autenticou: ', authenticated) ;   
+    const authenticated = this.cryptoService.checkPassword(authData.password, res[0].password);
+    if (authenticated) {
+      authorized = res[0];
     }
+
+    return Promise.resolve(authorized);
   }
 }

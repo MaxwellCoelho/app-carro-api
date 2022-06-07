@@ -19,10 +19,15 @@ export class CustomerController extends ResponseModule {
   
   // CUSTOMERS ---------------------------------------------------
   public async returnCustomer(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+
     const id: string = req.params.id;
+    let myFilter = id ? { _id: id } : {};
 
     try {
-      const responseService = await this.customerService.getCustomers(id);
+      const responseService = await this.customerService.getCustomers(myFilter);
       return this.success(res, { customers: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -31,6 +36,10 @@ export class CustomerController extends ResponseModule {
   }
 
   public async saveCustomer(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+
     const id: string = req.params.id;
     let customerData;
 
@@ -52,6 +61,10 @@ export class CustomerController extends ResponseModule {
   }
 
   public async removeCustomer(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+
     const id: string = req.params.id;
 
     try {
@@ -65,6 +78,10 @@ export class CustomerController extends ResponseModule {
 
   // ROLES ---------------------------------------------------
   public async returnRole(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+
     const id: string = req.params.id;
 
     try {
@@ -77,6 +94,10 @@ export class CustomerController extends ResponseModule {
   }
 
   public async saveRole(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+
     const id: string = req.params.id;
     let roleData;
 
@@ -98,6 +119,10 @@ export class CustomerController extends ResponseModule {
   }
 
   public async removeRole(req: Request, res: Response) {
+    if (!req.isAuthenticated()) {
+      return this.unauthorized(res);
+    }
+    
     const id: string = req.params.id;
 
     try {

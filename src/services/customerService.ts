@@ -10,16 +10,16 @@ export class CustomerService {
   ) { }
 
   // CUSTOMERS ---------------------------------------------------
-  public async getCustomers(id?: string): Promise<Object> {
-    let filter = id ? { _id: id } : {};
-    const res = await customerModel.find(filter).then(entries => entries);
+  public async getCustomers(filter?: any): Promise<Object> {
+    let myFilter = filter ? filter : {};
+    const res = await customerModel.find(myFilter).then(entries => entries);
 
     for (const item of res) {
       await this.getRoles(item.role).then(role => {
         if (role[0]) {
           item.role = role[0];
         }
-      });      
+      });
     }
 
     return res.length
@@ -28,7 +28,7 @@ export class CustomerService {
   }
 
   public async setCustomer(req: Request, currentTime: string, id?: string): Promise<Object> {
-    let exists = id ? await this.getCustomers(id) : null;
+    let exists = id ? await this.getCustomers({ _id: id }) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });
