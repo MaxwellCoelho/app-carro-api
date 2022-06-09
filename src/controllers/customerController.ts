@@ -19,12 +19,12 @@ export class CustomerController extends ResponseModule {
   
   // CUSTOMERS ---------------------------------------------------
   public async returnCustomer(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
-      return this.unauthorized(res);
-    }
-
     const id: string = req.params.id;
     let myFilter = id ? { _id: id } : {};
+  
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1 && Object.keys(myFilter).length === 0)) {
+      return this.unauthorized(res);
+    }
 
     try {
       const responseService = await this.customerService.getCustomers(myFilter);
@@ -36,7 +36,7 @@ export class CustomerController extends ResponseModule {
   }
 
   public async saveCustomer(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }
 
@@ -61,7 +61,7 @@ export class CustomerController extends ResponseModule {
   }
 
   public async removeCustomer(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }
 
@@ -78,11 +78,11 @@ export class CustomerController extends ResponseModule {
 
   // ROLES ---------------------------------------------------
   public async returnRole(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
+    const id: string = req.params.id;
+
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1 && !id)) {
       return this.unauthorized(res);
     }
-
-    const id: string = req.params.id;
 
     try {
       const responseService = await this.customerService.getRoles(id);
@@ -94,7 +94,7 @@ export class CustomerController extends ResponseModule {
   }
 
   public async saveRole(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }
 
@@ -119,7 +119,7 @@ export class CustomerController extends ResponseModule {
   }
 
   public async removeRole(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }
     

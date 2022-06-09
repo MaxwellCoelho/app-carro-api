@@ -13,6 +13,10 @@ export class CustomerService {
   public async getCustomers(filter?: any): Promise<Object> {
     let myFilter = filter ? filter : {};
     const res = await customerModel.find(myFilter).then(entries => entries);
+    
+    if (!res.length) {
+      Promise.reject({ statusCode: 404 });
+    }
 
     for (const item of res) {
       await this.getRoles(item.role).then(role => {

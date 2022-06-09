@@ -12,7 +12,7 @@ const sessionMiddleware = (req: Request, res: Response, next: NextFunction) => {
             mongoUrl: process.env.MONGO_URI
         }),
         cookie: { 
-            maxAge: 30 * 60 * 1000 //30min
+            maxAge: 30 * 60 * 60 * 60 * 1000
         }
     })(req, res, next);
 }

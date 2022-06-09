@@ -56,7 +56,7 @@ export class CarController extends ResponseModule {
   }
 
   public async removeCategory(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }
 
@@ -110,7 +110,7 @@ export class CarController extends ResponseModule {
   }
 
   public async removeBrand(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }
 
@@ -164,7 +164,7 @@ export class CarController extends ResponseModule {
   }
 
   public async removeModel(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }
     

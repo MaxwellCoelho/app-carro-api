@@ -21,17 +21,21 @@ export class AuthController extends ResponseModule {
 
   public async authUser(req: Request, res: Response, next: NextFunction) {
     let authData;
+    let authorized;
 
     try {
         authData = this.cryptoService.decodeJwt(req.body.authData);
+        authorized = await this.authService.authUser(authData); 
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.unauthorized(res);
+      return this.notFound(res);
+    }
+  
+    if (!authorized) {
+      return this.notFound(res);
     }
 
-    const authorized = await this.authService.authUser(authData); 
-
-    if (!authorized) {
+    if (authorized && !authorized.active) {
       return this.unauthorized(res);
     }
 

@@ -11,7 +11,14 @@ export class AuthService {
 
   public async authUser(authData: any) {
     const filter = { email: authData.email };
-    const res = await this.customerService.getCustomers(filter);
+    let res;
+
+    try {
+      res = await this.customerService.getCustomers(filter);
+    } catch (err) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
     let authorized;
 
     const authenticated = this.cryptoService.checkPassword(authData.password, res[0].password);
