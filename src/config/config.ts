@@ -1,4 +1,4 @@
 export const config = {
   production: false,
-  PORT: 3001,
+  PORT: 3001
 };
