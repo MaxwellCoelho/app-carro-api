@@ -45,8 +45,8 @@ const PORT = config.PORT;
 const cryptoService = new CryptoService();
 const uDate = new UDate();
 const testService = new TestService();
-const customerService = new CustomerService(cryptoService);
-const carService = new CarService();
+const customerService = new CustomerService(cryptoService, uDate);
+const carService = new CarService(cryptoService, customerService);
 const authService = new AuthService(cryptoService, customerService);
 
 // Instancia dos componentes injetáveis

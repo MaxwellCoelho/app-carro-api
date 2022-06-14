@@ -31,7 +31,7 @@ export class CustomerController extends ResponseModule {
       return this.success(res, { customers: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -41,22 +41,13 @@ export class CustomerController extends ResponseModule {
     }
 
     const id: string = req.params.id;
-    let customerData;
 
     try {
-      customerData = this.cryptoService.decodeJwt(req.body.customerData);
-    } catch (error) {
-      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.unauthorized(res);
-    }
-
-    try {
-      const currentTime = this.uDate.getCurrentDateTimeString();
-      const responseService = await this.customerService.setCustomer(customerData, currentTime, id);
+      const responseService = await this.customerService.setCustomer(req, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -72,7 +63,7 @@ export class CustomerController extends ResponseModule {
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -89,7 +80,7 @@ export class CustomerController extends ResponseModule {
       return this.success(res, { roles: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -99,22 +90,13 @@ export class CustomerController extends ResponseModule {
     }
 
     const id: string = req.params.id;
-    let roleData;
 
     try {
-      roleData = this.cryptoService.decodeJwt(req.body.roleData);
-    } catch (error) {
-      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.unauthorized(res);
-    }
-
-    try {
-      const currentTime = this.uDate.getCurrentDateTimeString();
-      const responseService = await this.customerService.setRole(roleData, currentTime, id);
+      const responseService = await this.customerService.setRole(req, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -130,7 +112,7 @@ export class CustomerController extends ResponseModule {
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
   
