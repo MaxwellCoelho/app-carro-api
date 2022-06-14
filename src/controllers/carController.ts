@@ -26,7 +26,7 @@ export class CarController extends ResponseModule {
       return this.success(res, { categories: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -36,22 +36,13 @@ export class CarController extends ResponseModule {
     }
 
     const id: string = req.params.id;
-    let categoryData;
 
     try {
-      categoryData = this.cryptoService.decodeJwt(req.body.categoryData);
-    } catch (error) {
-      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.unauthorized(res);
-    }
-
-    try {
-      const currentTime = this.uDate.getCurrentDateTimeString();
-      const responseService = await this.carService.setCategory(categoryData, currentTime, id);
+      const responseService = await this.carService.setCategory(req, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -67,7 +58,7 @@ export class CarController extends ResponseModule {
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -80,7 +71,7 @@ export class CarController extends ResponseModule {
       return this.success(res, { brands: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -90,22 +81,13 @@ export class CarController extends ResponseModule {
     }
 
     const id: string = req.params.id;
-    let brandData;
 
     try {
-      brandData = this.cryptoService.decodeJwt(req.body.brandData);
-    } catch (error) {
-      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.unauthorized(res);
-    }
-
-    try {
-      const currentTime = this.uDate.getCurrentDateTimeString();
-      const responseService = await this.carService.setBrand(brandData, currentTime, id);
+      const responseService = await this.carService.setBrand(req, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -121,7 +103,7 @@ export class CarController extends ResponseModule {
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -134,7 +116,7 @@ export class CarController extends ResponseModule {
       return this.success(res, { models: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -144,22 +126,13 @@ export class CarController extends ResponseModule {
     }
 
     const id: string = req.params.id;
-    let modelData;
-
+    
     try {
-      modelData = this.cryptoService.decodeJwt(req.body.modelData);
-    } catch (error) {
-      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.unauthorized(res);
-    }
-
-    try {
-      const currentTime = this.uDate.getCurrentDateTimeString();
-      const responseService = await this.carService.setModel(modelData, currentTime, id);
+      const responseService = await this.carService.setModel(req, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
 
@@ -175,7 +148,7 @@ export class CarController extends ResponseModule {
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return error.statusCode === 404 ? this.notFound(res) : this.internalServerError(res);
+      return this.errorHandler(error, res);
     }
   }
   

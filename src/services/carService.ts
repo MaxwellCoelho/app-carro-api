@@ -1,35 +1,47 @@
 import { config } from '../config/config';
 import { categoryModel, brandModel, modelModel } from '../models/car.model';
+import { CryptoService, CustomerService } from '../services';
 
 export class CarService {
   public conf = config;
+
+  constructor(
+    private cryptoService: CryptoService,
+    private customerService: CustomerService,
+  ) { }
 
   // CATEGORIES ---------------------------------------------------
   public async getCategories(id?: string): Promise<Object> {
     let filter = id ? { _id: id } : {};
     const res = await categoryModel.find(filter).then(entries => entries);
+
+    if (!res.length) {
+      Promise.reject({ statusCode: 404 });
+    }
   
-    return res.length
-      ? Promise.resolve(res)
-      : Promise.reject({ statusCode: 404 });
+    return this.customerService.returnWithCreatedAndModifierUser(res);
   }
 
-  public async setCategory(req: Request, currentTime: string, id?: string): Promise<Object> {
+  public async setCategory(req: any, id?: string): Promise<Object> {
     let exists = id ? await this.getCategories(id) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });
     }
 
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
     let res = {};
 
     if (exists) {
-      const modifiedPost = { ...req, modified: currentTime };
+      const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       res['saved'] = await categoryModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
-      const createdPost = new categoryModel(req);
-      createdPost.created = currentTime;
-      createdPost.modified = currentTime;
+      const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, categoryModel);
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
@@ -53,27 +65,33 @@ export class CarService {
     let filter = id ? { _id: id } : {};
     const res = await brandModel.find(filter).then(entries => entries);
     
-    return res.length
-      ? Promise.resolve(res)
-      : Promise.reject({ statusCode: 404 });
+    if (!res.length) {
+      Promise.reject({ statusCode: 404 });
+    }
+  
+    return this.customerService.returnWithCreatedAndModifierUser(res);
   }
 
-  public async setBrand(req: Request, currentTime: string, id?: string): Promise<Object> {
+  public async setBrand(req: any, id?: string): Promise<Object> {
     let exists = id ? await this.getBrands(id) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });
     }
 
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
     let res = {};
 
     if (exists) {
-      const modifiedPost = { ...req, modified: currentTime };
+      const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       res['saved'] = await brandModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
-      const createdPost = new brandModel(req);
-      createdPost.created = currentTime;
-      createdPost.modified = currentTime;
+      const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, brandModel);
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
@@ -97,6 +115,10 @@ export class CarService {
     let filter = id ? { _id: id } : {};
     const res = await modelModel.find(filter).then(entries => entries);
 
+    if (!res.length) {
+      Promise.reject({ statusCode: 404 });
+    }
+
     for (const item of res) {
       await this.getBrands(item.brand).then(brand => {
         if (brand[0]) {
@@ -111,27 +133,29 @@ export class CarService {
       }); 
     }
     
-    return res.length
-      ? Promise.resolve(res)
-      : Promise.reject({ statusCode: 404 });
+    return this.customerService.returnWithCreatedAndModifierUser(res);
   }
 
-  public async setModel(req: Request, currentTime: string, id?: string): Promise<Object> {
+  public async setModel(req: any, id?: string): Promise<Object> {
     let exists = id ? await this.getModels(id) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });
     }
 
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
     let res = {};
 
     if (exists) {
-      const modifiedPost = { ...req, modified: currentTime };
+      const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
-      const createdPost = new modelModel(req);
-      createdPost.created = currentTime;
-      createdPost.modified = currentTime;
+      const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, modelModel);
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 

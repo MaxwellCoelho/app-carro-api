@@ -47,4 +47,19 @@ export abstract class ResponseModule implements IControllerResponse {
         return res.status(code).send(model);
     }
 
+    public errorHandler(error, res): any {
+        switch (error.statusCode) {
+          case statusCodeIds.unauthorized:
+            return this.unauthorized(res);
+          case statusCodeIds.forbidden:
+            return this.forbidden(res);
+          case statusCodeIds.bad_request:
+            return this.badRequest(res);
+          case statusCodeIds.not_found: 
+            return this.notFound(res);
+          default:
+            return this.internalServerError(res);
+        }
+      }
+
 }

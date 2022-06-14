@@ -24,7 +24,7 @@ export class AuthController extends ResponseModule {
     let authorized;
 
     try {
-        authData = this.cryptoService.decodeJwt(req.body.authData);
+        authData = this.cryptoService.decodeJwt(req.body.data);
         authorized = await this.authService.authUser(authData); 
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
