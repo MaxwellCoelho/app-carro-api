@@ -110,9 +110,23 @@ export class CarController extends ResponseModule {
   // MODELS ---------------------------------------------------
   public async returnModel(req: Request, res: Response) {
     const id: string = req.params.id;
+    let myFilter = id ? { _id: id } : {};
 
     try {
-      const responseService = await this.carService.getModels(id);
+      const responseService = await this.carService.getModels(myFilter);
+      return this.success(res, { models: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
+
+  public async returnFilteredModel(req: Request, res: Response) {    
+    let myFilter = req.body;
+    console.log(myFilter);
+
+    try {
+      const responseService = await this.carService.getModels(myFilter);
       return this.success(res, { models: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);

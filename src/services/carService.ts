@@ -111,9 +111,9 @@ export class CarService {
   }
 
   // MODELS ---------------------------------------------------
-  public async getModels(id?: string): Promise<Object> {
-    let filter = id ? { _id: id } : {};
-    const res = await modelModel.find(filter).then(entries => entries);
+  public async getModels(filter?: any): Promise<Object> {
+    let myFilter = filter ? filter : {};
+    const res = await modelModel.find(myFilter).then(entries => entries);
 
     if (!res.length) {
       Promise.reject({ statusCode: 404 });
@@ -137,7 +137,7 @@ export class CarService {
   }
 
   public async setModel(req: any, id?: string): Promise<Object> {
-    let exists = id ? await this.getModels(id) : null;
+    let exists = id ? await this.getModels({ _id: id }) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });
