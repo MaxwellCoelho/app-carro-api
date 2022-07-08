@@ -121,8 +121,14 @@ export class CarController extends ResponseModule {
     }
   }
 
-  public async returnFilteredModel(req: Request, res: Response) {    
-    let myFilter = req.body;
+  public async returnFilteredModel(req: Request, res: Response) { 
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    let myFilter = req.body.data;
     console.log(myFilter);
 
     try {
