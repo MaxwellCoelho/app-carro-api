@@ -3,7 +3,7 @@ import * as express from 'express';
 import * as mongoose from 'mongoose';
 import "dotenv/config";
 
-import { UDate } from './utils';
+import { UDate, Utils } from './utils';
 import { config } from './config/config';
 
 import sessionMiddleware from './middlewares/session.middleware';
@@ -44,9 +44,10 @@ const PORT = config.PORT;
 // Instancia dos serviços a serem injetados nos controllers
 const cryptoService = new CryptoService();
 const uDate = new UDate();
+const utils = new Utils();
 const testService = new TestService();
 const customerService = new CustomerService(cryptoService, uDate);
-const carService = new CarService(cryptoService, customerService);
+const carService = new CarService(cryptoService, customerService, utils);
 const authService = new AuthService(cryptoService, customerService);
 
 // Instancia dos componentes injetáveis

@@ -1,6 +1,7 @@
 import { config } from '../config/config';
 import { categoryModel, brandModel, modelModel } from '../models/car.model';
 import { CryptoService, CustomerService } from '../services';
+import { Utils } from '../utils/utils';
 
 export class CarService {
   public conf = config;
@@ -8,6 +9,7 @@ export class CarService {
   constructor(
     private cryptoService: CryptoService,
     private customerService: CustomerService,
+    private utils: Utils,
   ) { }
 
   // CATEGORIES ---------------------------------------------------
@@ -88,10 +90,12 @@ export class CarService {
     let res = {};
 
     if (exists) {
-      const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
+      let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
+      modifiedPost['url'] = this.utils.sanitizeText(modifiedPost.name);
       res['saved'] = await brandModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
-      const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, brandModel);
+      let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, brandModel);
+      createdPost['url'] = this.utils.sanitizeText(createdPost.name);
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
@@ -152,10 +156,12 @@ export class CarService {
     let res = {};
 
     if (exists) {
-      const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
+      let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
+      modifiedPost['url'] = this.utils.sanitizeText(modifiedPost.name);
       res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
-      const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, modelModel);
+      let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, modelModel);
+      createdPost['url'] = this.utils.sanitizeText(createdPost.name);
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
