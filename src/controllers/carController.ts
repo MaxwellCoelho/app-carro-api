@@ -129,7 +129,6 @@ export class CarController extends ResponseModule {
     }
 
     let myFilter = req.body.data;
-    console.log(myFilter);
 
     try {
       const responseService = await this.carService.getModels(myFilter);
