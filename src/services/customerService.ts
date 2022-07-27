@@ -32,7 +32,7 @@ export class CustomerService {
         };
         resumedArray.push(resumedObj);
       } else {
-        await this.getRoles(item.role).then(role => {
+        await this.getRoles({ _id: item.role }).then(role => {
           if (role[0]) {
             item.role = role[0];
           }
@@ -77,12 +77,15 @@ export class CustomerService {
 
       res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
+      console.log(req);
       const createdPost = this.setCreatedAndModifierUser(req, idExists, customerModel);
       createdPost.password = this.cryptoService.encriptPassword(createdPost.password);
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
-    res['customers'] = await this.getCustomers();
+    if (req.user && req.user['role'].level < 2) {
+      res['customers'] = await this.getCustomers();
+    }
 
     return Promise.resolve(res);
   }
@@ -99,9 +102,9 @@ export class CustomerService {
 
   
   // ROLES ---------------------------------------------------
-  public async getRoles(id?: string): Promise<Object> {
-    const filter = id ? { _id: id } : {};
-    const res = await roleModel.find(filter);
+  public async getRoles(filter?: any): Promise<Object> {
+    let myFilter = filter ? filter : {};
+    const res = await roleModel.find(myFilter);
 
     if (!res.length) {
       Promise.reject({ statusCode: 404 });
@@ -111,7 +114,7 @@ export class CustomerService {
   }
 
   public async setRole(req: any, id?: string): Promise<Object> {
-    let exists = id ? await this.getRoles(id) : null;
+    let exists = id ? await this.getRoles({ _id: id }) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });

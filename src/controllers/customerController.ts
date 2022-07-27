@@ -70,13 +70,14 @@ export class CustomerController extends ResponseModule {
   // ROLES ---------------------------------------------------
   public async returnRole(req: Request, res: Response) {
     const id: string = req.params.id;
+    let myFilter = id ? { _id: id } : {};
 
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1 && !id)) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1 && Object.keys(myFilter).length === 0)) {
       return this.unauthorized(res);
     }
 
     try {
-      const responseService = await this.customerService.getRoles(id);
+      const responseService = await this.customerService.getRoles(myFilter);
       return this.success(res, { roles: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
