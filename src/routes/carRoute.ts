@@ -31,6 +31,9 @@ export class CarRoutes {
         app.get(['/api/cars/models', '/api/cars/models/:id'], 
             async (req: Request, res: Response) => this.carController.returnModel(req, res));
 
+        app.post('/api/cars/models/filter', 
+            async (req: Request, res: Response) => this.carController.returnFilteredModel(req, res));
+
         app.post(['/api/cars/models', '/api/cars/models/:id'], 
             async (req: Request, res: Response) => this.carController.saveModel(req, res));
 

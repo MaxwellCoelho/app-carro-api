@@ -1,6 +1,7 @@
 import { config } from '../config/config';
 import { categoryModel, brandModel, modelModel } from '../models/car.model';
 import { CryptoService, CustomerService } from '../services';
+import { Utils } from '../utils/utils';
 
 export class CarService {
   public conf = config;
@@ -8,6 +9,7 @@ export class CarService {
   constructor(
     private cryptoService: CryptoService,
     private customerService: CustomerService,
+    private utils: Utils,
   ) { }
 
   // CATEGORIES ---------------------------------------------------
@@ -88,10 +90,12 @@ export class CarService {
     let res = {};
 
     if (exists) {
-      const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
+      let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
+      modifiedPost['url'] = this.utils.sanitizeText(modifiedPost.name);
       res['saved'] = await brandModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
-      const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, brandModel);
+      let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, brandModel);
+      createdPost['url'] = this.utils.sanitizeText(createdPost.name);
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
@@ -111,9 +115,9 @@ export class CarService {
   }
 
   // MODELS ---------------------------------------------------
-  public async getModels(id?: string): Promise<Object> {
-    let filter = id ? { _id: id } : {};
-    const res = await modelModel.find(filter).then(entries => entries);
+  public async getModels(filter?: any): Promise<Object> {
+    let myFilter = filter ? filter : {};
+    const res = await modelModel.find(myFilter).then(entries => entries);
 
     if (!res.length) {
       Promise.reject({ statusCode: 404 });
@@ -137,7 +141,7 @@ export class CarService {
   }
 
   public async setModel(req: any, id?: string): Promise<Object> {
-    let exists = id ? await this.getModels(id) : null;
+    let exists = id ? await this.getModels({ _id: id }) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });
@@ -152,10 +156,12 @@ export class CarService {
     let res = {};
 
     if (exists) {
-      const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
+      let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
+      modifiedPost['url'] = this.utils.sanitizeText(modifiedPost.name);
       res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
-      const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, modelModel);
+      let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, modelModel);
+      createdPost['url'] = this.utils.sanitizeText(createdPost.name);
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 

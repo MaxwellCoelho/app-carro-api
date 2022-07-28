@@ -12,6 +12,8 @@ const categorySchema = new mongoose.Schema({
 const brandSchema = new mongoose.Schema({
     name: String,
     image: String,
+    thumb: String,
+    url: String,
     active: Boolean,
     created_by: Object,
     created: String,
@@ -24,6 +26,8 @@ const modelSchema = new mongoose.Schema({
     brand: Object,
     category: Object,
     image: String,
+    thumb: String,
+    url: String,
     active: Boolean,
     created_by: Object,
     created: String,

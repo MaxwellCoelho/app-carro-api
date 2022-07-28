@@ -3,7 +3,7 @@ import * as express from 'express';
 import * as mongoose from 'mongoose';
 import "dotenv/config";
 
-import { UDate } from './utils';
+import { UDate, Utils } from './utils';
 import { config } from './config/config';
 
 import sessionMiddleware from './middlewares/session.middleware';
@@ -14,6 +14,7 @@ import {
     TestRoutes,
     CustomerRoutes,
     CarRoutes,
+    OpinionRoutes,
     AuthRoutes
 } from './routes';
 
@@ -23,6 +24,7 @@ import {
     CustomerService,
     CarService,
     CryptoService,
+    OpinionService,
     AuthService
 } from './services';
 
@@ -31,6 +33,7 @@ import {
     TestController,
     CustomerController,
     CarController,
+    OpinionController,
     AuthController
 } from './controllers';
 
@@ -44,21 +47,25 @@ const PORT = config.PORT;
 // Instancia dos serviços a serem injetados nos controllers
 const cryptoService = new CryptoService();
 const uDate = new UDate();
+const utils = new Utils();
 const testService = new TestService();
 const customerService = new CustomerService(cryptoService, uDate);
-const carService = new CarService(cryptoService, customerService);
+const carService = new CarService(cryptoService, customerService, utils);
+const opinionService = new OpinionService(cryptoService, customerService, carService, uDate);
 const authService = new AuthService(cryptoService, customerService);
 
 // Instancia dos componentes injetáveis
 const testController = new TestController(testService, uDate);
 const customerController = new CustomerController(customerService, cryptoService, uDate);
 const carController = new CarController(carService, cryptoService, uDate);
+const opinionController = new OpinionController(opinionService, cryptoService, uDate);
 const authController = new AuthController(authService, cryptoService, uDate);
 
 // INSTANCIA DAS ROTAS
 const testRoute = new TestRoutes(testController);
 const customerRoute = new CustomerRoutes(customerController);
 const carRoute = new CarRoutes(carController);
+const opinionRoute = new OpinionRoutes(opinionController);
 const authRoute = new AuthRoutes(authController);
 
 const server = express();
@@ -87,6 +94,7 @@ server.use((req, res, next) => {
 testRoute.route(server);
 customerRoute.route(server);
 carRoute.route(server);
+opinionRoute.route(server);
 authRoute.route(server);
 
 server.listen(PORT, () => {

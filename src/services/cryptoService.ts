@@ -25,4 +25,17 @@ export class CryptoService {
     const decodedJwt = tokenJwt ? jwt.decode(tokenJwt, process.env.JWT_SECRET) : null;
     return decodedJwt;
   }
+
+  public randomPasswordGenerator(): string {
+    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    const string_length = 8;
+    let randomstring = '';
+    
+    for (let i=0; i<string_length; i++) {
+        const rnum = Math.floor(Math.random() * chars.length);
+        randomstring += chars.substring(rnum,rnum+1);
+    }
+
+    return randomstring;
+  }
 }
