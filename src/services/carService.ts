@@ -63,9 +63,9 @@ export class CarService {
   }
 
   // BRANDS ---------------------------------------------------
-  public async getBrands(id?: string): Promise<Object> {
-    let filter = id ? { _id: id } : {};
-    const res = await brandModel.find(filter).then(entries => entries);
+  public async getBrands(filter?: any): Promise<Object> {
+    let myFilter = filter ? filter : {};
+    const res = await brandModel.find(myFilter).then(entries => entries);
     
     if (!res.length) {
       Promise.reject({ statusCode: 404 });
@@ -75,7 +75,7 @@ export class CarService {
   }
 
   public async setBrand(req: any, id?: string): Promise<Object> {
-    let exists = id ? await this.getBrands(id) : null;
+    let exists = id ? await this.getBrands({ _id: id }) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });
@@ -124,7 +124,7 @@ export class CarService {
     }
 
     for (const item of res) {
-      await this.getBrands(item.brand).then(brand => {
+      await this.getBrands({ _id: item.brand }).then(brand => {
         if (brand[0]) {
           item.brand = brand[0];
         }

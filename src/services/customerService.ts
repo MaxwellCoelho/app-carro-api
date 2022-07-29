@@ -77,13 +77,12 @@ export class CustomerService {
 
       res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
     } else {
-      console.log(req);
       const createdPost = this.setCreatedAndModifierUser(req, idExists, customerModel);
       createdPost.password = this.cryptoService.encriptPassword(createdPost.password);
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
-    if (req.user && req.user['role'].level < 2) {
+    if (req.user && req.user['role'] && req.user['role'].level < 2) {
       res['customers'] = await this.getCustomers();
     }
 
@@ -153,13 +152,15 @@ export class CustomerService {
 
   public async returnWithCreatedAndModifierUser(res) {
     for (const item of res) {
-      await this.getCustomers({ _id: item.created_by }, true).then(user => {
-        if (user[0]) {
-          item.created_by = user[0];
-        }
-      });
+      if (item.created_by !== 'itself') {
+        await this.getCustomers({ _id: item.created_by }, true).then(user => {
+          if (user[0]) {
+            item.created_by = user[0];
+          }
+        });
+      }
 
-      if (item.modified_by !== item.created_by) {
+      if (item.modified_by !== 'itself' && item.modified_by !== item.created_by) {
         await this.getCustomers({ _id: item.modified_by }, true).then(user => {
           if (user[0]) {
             item.modified_by = user[0];

@@ -18,11 +18,16 @@ export class OpinionController extends ResponseModule {
   }
 
   public async returnOpinion(req: Request, res: Response) {
-    const id: string = req.params.id;
+    const brand: string = req.params.brand;
+    const car: string = req.params.car;
+    let myFilter = {};
+
+    if (brand) { myFilter['brand'] = brand; }
+    if (brand && car) { myFilter['model'] = car; }
 
     try {
-      const responseService = await this.opinionService.getOpinions(id);
-      return this.success(res, { opinions: responseService });
+      const responseService = await this.opinionService.getOpinions(myFilter);
+      return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.errorHandler(error, res);
