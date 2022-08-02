@@ -5,6 +5,26 @@ import { UDate } from '../utils';
 
 export class OpinionService {
   public conf = config;
+  public sum = {
+    car: {
+      inside: 0,
+      outside: 0,
+      confort: 0,
+      safety: 0,
+      consumption: 0,
+      durability: 0,
+      worth: 0,
+      average: 0
+    },
+    brand: {
+      services: 0,
+      people: 0,
+      prices: 0,
+      credibility: 0,
+      satisfaction: 0,
+      average: 0
+    }
+  }
 
   constructor(
     private cryptoService: CryptoService,
@@ -12,6 +32,16 @@ export class OpinionService {
     private carService: CarService,
     private uDate: UDate,
   ) { }
+
+  public clearSum() {
+    for (const key of Object.keys(this.sum.car)) {
+      this.sum.car[key] = 0
+    }
+
+    for (const key of Object.keys(this.sum.brand)) {
+      this.sum.brand[key] = 0
+    }
+  }
 
   public async getOpinions(filter?: any, resumed?: boolean): Promise<any> {
     let myFilter = filter ? filter : {};
@@ -23,29 +53,10 @@ export class OpinionService {
       Promise.reject({ statusCode: 404 });
     }
 
-    let sum = {
-      car: {
-        val_inside: 0,
-        val_outside: 0,
-        val_confort: 0,
-        val_safety: 0,
-        val_consumption: 0,
-        val_durability: 0,
-        val_worth: 0,
-        val_average: 0
-      },
-      brand: {
-        val_services: 0,
-        val_people: 0,
-        val_prices: 0,
-        val_credibility: 0,
-        val_satisfaction: 0,
-        val_average: 0
-      }
-    }
+    this.clearSum();
 
-    const carKeys = Object.keys(sum.car);
-    const brandKeys = Object.keys(sum.brand);
+    const carKeys = Object.keys(this.sum.car);
+    const brandKeys = Object.keys(this.sum.brand);
     const showCarAverages = myFilter.brand && myFilter.model;
     const showBrandAverages = myFilter.brand && !myFilter.model;
     const carModel = showCarAverages ? await this.carService.getModels({ _id: myFilter.model }) : [];
@@ -68,13 +79,13 @@ export class OpinionService {
 
       if (showCarAverages) {
         for (let i = 0; i < carKeys.length; i++) {
-          sum.car[carKeys[i]] += item[`car_${carKeys[i]}`];
+          this.sum.car[carKeys[i]] += item[`car_val_${carKeys[i]}`];
         }
       }
 
       if (showBrandAverages) {
         for (let i = 0; i < brandKeys.length; i++) {
-          sum.brand[brandKeys[i]] += item[`brand_${brandKeys[i]}`];
+          this.sum.brand[brandKeys[i]] += item[`brand_val_${brandKeys[i]}`];
         }
       }
     }
@@ -82,24 +93,24 @@ export class OpinionService {
     const qtd = res.length;
     const response = {
       opinions: await this.customerService.returnWithCreatedAndModifierUser(res),
-      length: qtd
+      qtd: qtd
     }
 
     if (showCarAverages) {
       for (let i = 0; i < carKeys.length; i++) {
-        sum.car[carKeys[i]] = parseFloat((sum.car[carKeys[i]] / qtd).toFixed(1));
+        this.sum.car[carKeys[i]] = parseFloat((this.sum.car[carKeys[i]] / qtd).toFixed(1));
       }
 
-      response['averages'] = sum.car;
+      response['averages'] = this.sum.car;
       response['model'] = carModel[0];
     }
 
     if (showBrandAverages) {
       for (let i = 0; i < brandKeys.length; i++) {
-        sum.brand[brandKeys[i]] = parseFloat((sum.brand[brandKeys[i]] / qtd).toFixed(1));
+        this.sum.brand[brandKeys[i]] = parseFloat((this.sum.brand[brandKeys[i]] / qtd).toFixed(1));
       }
 
-      response['averages'] = sum.brand;
+      response['averages'] = this.sum.brand;
       response['brand'] = carBrand[0];
     }
 
@@ -181,9 +192,6 @@ export class OpinionService {
       }
     }
 
-    const carAverage = this.getAverage(car.valuation);
-    const brandAverage = this.getAverage(brand.valuation);
-
     const payload = {
       customer: customerId,
       model: car.carModel,
@@ -193,28 +201,29 @@ export class OpinionService {
       year_bought: car.yearBought,
       kept_period: car.keptPeriod,
       km_bought: car.kmBought,
-      car_val_inside: car.valuation.interior,
-      car_val_outside: car.valuation.exterior,
-      car_val_confort: car.valuation.conforto,
-      car_val_safety: car.valuation.seguranca,
-      car_val_consumption: car.valuation.consumo,
-      car_val_durability: car.valuation.durabilidade,
-      car_val_worth: car.valuation.custobeneficio,
-      car_val_average: carAverage.toFixed(1),
       car_title: car.finalWords.title,
       car_positive: car.finalWords.positive,
       car_negative: car.finalWords.negative,
       brand: brand.carBrand,
-      brand_val_services: brand.valuation.servicos,
-      brand_val_people: brand.valuation.atendimento,
-      brand_val_prices: brand.valuation.precos,
-      brand_val_credibility: brand.valuation.credibilidade,
-      brand_val_satisfaction: brand.valuation.satisfacao,
-      brand_val_average: brandAverage.toFixed(1),
       brand_title: brand.finalWords.title,
       brand_positive: brand.finalWords.positive,
       brand_negative: brand.finalWords.negative,
       active: true,
+    }
+
+    const carAverage = this.getAverage(car.valuation);
+    const brandAverage = this.getAverage(brand.valuation);
+
+    for (const key of Object.keys(this.sum.car)) {
+      payload[`car_val_${key}`] = key === 'average'
+        ? carAverage.toFixed(1)
+        : car.valuation[key];
+    }
+
+    for (const key of Object.keys(this.sum.brand)) {
+      payload[`brand_val_${key}`] = key === 'average'
+        ? brandAverage.toFixed(1)
+        : brand.valuation[key];
     }
 
     req.body.data = payload;
