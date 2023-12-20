@@ -144,7 +144,7 @@ export class OpinionService {
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
-    if (req.user && req.user['role'].level < 2) {
+    if (req.user && req.user['role'] && req.user['role'].level < 2) {
       res['opinions'] = await this.getOpinions();
     }
 
