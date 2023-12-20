@@ -5,6 +5,26 @@ import { UDate } from '../utils';
 
 export class OpinionService {
   public conf = config;
+  public sum = {
+    car: {
+      inside: 0,
+      outside: 0,
+      confort: 0,
+      safety: 0,
+      consumption: 0,
+      durability: 0,
+      worth: 0,
+      average: 0
+    },
+    brand: {
+      services: 0,
+      people: 0,
+      prices: 0,
+      credibility: 0,
+      satisfaction: 0,
+      average: 0
+    }
+  }
 
   constructor(
     private cryptoService: CryptoService,
@@ -12,6 +32,16 @@ export class OpinionService {
     private carService: CarService,
     private uDate: UDate,
   ) { }
+
+  public clearSum() {
+    for (const key of Object.keys(this.sum.car)) {
+      this.sum.car[key] = 0
+    }
+
+    for (const key of Object.keys(this.sum.brand)) {
+      this.sum.brand[key] = 0
+    }
+  }
 
   public async getOpinions(filter?: any, resumed?: boolean): Promise<any> {
     let myFilter = filter ? filter : {};
@@ -23,33 +53,68 @@ export class OpinionService {
       Promise.reject({ statusCode: 404 });
     }
 
+    this.clearSum();
+
+    const carKeys = Object.keys(this.sum.car);
+    const brandKeys = Object.keys(this.sum.brand);
+    const showCarAverages = myFilter.brand && myFilter.model;
+    const showBrandAverages = myFilter.brand && !myFilter.model;
+    const carModel = showCarAverages ? await this.carService.getModels({ _id: myFilter.model }) : [];
+    const carBrand = showBrandAverages ? await this.carService.getBrands({ _id: myFilter.brand }) : [];
+
     for (const item of res) {
       await this.customerService.getCustomers({ _id: item.customer }, true).then(user => {
         if (user[0]) {
           item.customer = user[0];
         }
-      });
-
-      await this.carService.getModels({ _id: item.model }).then(model => {
-        if (model[0]) {
-          item.model = model[0];
-        }
       }); 
 
-      // await this.carService.getBrands(item.model.brand).then(brand => {
-      //   if (brand[0]) {
-      //     item.model.brand = brand[0];
-      //   }
-      // });
+      if (!showCarAverages && !showBrandAverages) {
+        await this.carService.getModels({ _id: item.model }).then(model => {
+          if (model[0]) {
+            item.model = model[0];
+          }
+        }); 
+      }
 
-      // await this.carService.getCategories(item.model.category).then(category => {
-      //   if (category[0]) {
-      //     item.model.category = category[0];
-      //   }
-      // });
+      if (showCarAverages) {
+        for (let i = 0; i < carKeys.length; i++) {
+          this.sum.car[carKeys[i]] += item[`car_val_${carKeys[i]}`];
+        }
+      }
+
+      if (showBrandAverages) {
+        for (let i = 0; i < brandKeys.length; i++) {
+          this.sum.brand[brandKeys[i]] += item[`brand_val_${brandKeys[i]}`];
+        }
+      }
     }
 
-    return this.customerService.returnWithCreatedAndModifierUser(res);
+    const qtd = res.length;
+    const response = {
+      opinions: await this.customerService.returnWithCreatedAndModifierUser(res),
+      qtd: qtd
+    }
+
+    if (showCarAverages) {
+      for (let i = 0; i < carKeys.length; i++) {
+        this.sum.car[carKeys[i]] = parseFloat((this.sum.car[carKeys[i]] / qtd).toFixed(1));
+      }
+
+      response['averages'] = this.sum.car;
+      response['model'] = carModel[0];
+    }
+
+    if (showBrandAverages) {
+      for (let i = 0; i < brandKeys.length; i++) {
+        this.sum.brand[brandKeys[i]] = parseFloat((this.sum.brand[brandKeys[i]] / qtd).toFixed(1));
+      }
+
+      response['averages'] = this.sum.brand;
+      response['brand'] = carBrand[0];
+    }
+
+    return response;
   }
 
   public async setOpinions(req: any, id?: string): Promise<Object> {
@@ -79,7 +144,7 @@ export class OpinionService {
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
-    if (req.user && req.user['role'].level < 2) {
+    if (req.user && req.user['role'] && req.user['role'].level < 2) {
       res['opinions'] = await this.getOpinions();
     }
 
@@ -104,7 +169,6 @@ export class OpinionService {
 
     if (req.isAuthenticated()) {
       customerId = req.user.id;
-      console.log('ta autenticado, usa o id: '+req.user.id+' do '+req.user.email);
     } else {
       let foundUser;
 
@@ -115,15 +179,12 @@ export class OpinionService {
       });
 
       if (foundUser) {
-        console.log(foundUser);
         customerId = foundUser['id'];
-        console.log('NAO ta autenticado, mas achou email. usa o id: '+foundUser['id']+' do '+foundUser['name']);
       } else {
         let newUserPayload = await this.setNewUserPayload(user); 
         const createdUser = await this.customerService.setCustomer(newUserPayload);
 
         customerId = createdUser['_id'];
-        console.log('NAO ta autenticado, e NAO achou email. cria o id: '+createdUser['_id']+' do '+createdUser['email']);
       }
 
       req['user'] = {
@@ -140,25 +201,29 @@ export class OpinionService {
       year_bought: car.yearBought,
       kept_period: car.keptPeriod,
       km_bought: car.kmBought,
-      car_val_inside: car.valuation.interior,
-      car_val_outside: car.valuation.exterior,
-      car_val_confort: car.valuation.conforto,
-      car_val_safety: car.valuation.seguranca,
-      car_val_consumption: car.valuation.consumo,
-      car_val_durability: car.valuation.durabilidade,
-      car_val_worth: car.valuation.custobeneficio,
       car_title: car.finalWords.title,
       car_positive: car.finalWords.positive,
       car_negative: car.finalWords.negative,
-      brand_val_services: brand.valuation.interior,
-      brand_val_people: brand.valuation.atendimento,
-      brand_val_prices: brand.valuation.precos,
-      brand_val_credibility: brand.valuation.credibilidade,
-      brand_val_satisfaction: brand.valuation.satisfacao,
+      brand: brand.carBrand,
       brand_title: brand.finalWords.title,
       brand_positive: brand.finalWords.positive,
       brand_negative: brand.finalWords.negative,
       active: true,
+    }
+
+    const carAverage = this.getAverage(car.valuation);
+    const brandAverage = this.getAverage(brand.valuation);
+
+    for (const key of Object.keys(this.sum.car)) {
+      payload[`car_val_${key}`] = key === 'average'
+        ? carAverage.toFixed(1)
+        : car.valuation[key];
+    }
+
+    for (const key of Object.keys(this.sum.brand)) {
+      payload[`brand_val_${key}`] = key === 'average'
+        ? brandAverage.toFixed(1)
+        : brand.valuation[key];
     }
 
     req.body.data = payload;
@@ -196,6 +261,17 @@ export class OpinionService {
     };
 
     return payload;
+  }
+
+  public getAverage(data: object): number {
+    const values = Object.values(data);
+    let sum = 0;
+
+    for (const value of values) {
+      sum += value;
+    }
+
+    return sum / values.length;
   }
 
 }
