@@ -62,7 +62,7 @@ export class OpinionService {
     const carModel = showCarAverages ? await this.carService.getModels({ _id: myFilter.model }) : [];
     const carBrand = showBrandAverages ? await this.carService.getBrands({ _id: myFilter.brand }) : [];
     let filteredItems: any[] = [];
-
+    
     for (const item of res) {
       if (!resumed) {
         await this.customerService.getCustomers({ _id: item.customer }, true).then(user => {
@@ -126,7 +126,7 @@ export class OpinionService {
   }
 
   public async setOpinions(req: any, id?: string): Promise<Object> {
-    let exists = id ? await this.getOpinions(id) : null;
+    let exists = id ? await this.getOpinions({ _id: id }) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });
@@ -144,8 +144,15 @@ export class OpinionService {
     req = dataReq;
 
     if (exists) {
+      const currentStatus = exists.opinions[0]['active'];
+      const newStatus = req.body.data['active'];
       const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       res['saved'] = await opinionModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
+
+      if (newStatus !== currentStatus) {
+        const operation = currentStatus === false ? 'set' : 'delete';
+        this.carService.updateAverage(res['saved'], operation);
+      }
     } else {
       const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, opinionModel);
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
