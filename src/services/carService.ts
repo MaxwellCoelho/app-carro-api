@@ -117,29 +117,61 @@ export class CarService {
   }
 
   // MODELS ---------------------------------------------------
-  public async getModels(filter?: any): Promise<Object> {
+  public async getModels(filter?: any, resumed?: boolean): Promise<any> {
     let myFilter = filter ? filter : {};
-    const res = await modelModel.find(myFilter).then(entries => entries);
+    let res;
 
-    if (!res.length) {
+    try {
+      res = await modelModel.find(myFilter).then(entries => entries);
+    } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
 
+    const resumedArray: Object[] = [];
+
     for (const item of res) {
+      let resumedObj = {};
+
+      if (resumed) {
+        resumedObj = {
+          name: item['name'],
+          image: item['image'],
+          thumb: item['thumb'],
+          url: item['url'],
+          average: item['average'],
+          val_length: item['val_length'],
+        };
+      }
+
       await this.getBrands({ _id: item.brand }).then(brand => {
         if (brand[0]) {
-          item.brand = brand[0];
+          if (resumed) {
+            resumedObj['brand'] = {
+              name: brand[0]['name'],
+              image: brand[0]['image'],
+            }
+          } else {
+            item.brand = brand[0];
+          }
         }
       });
       
       await this.getCategories(item.category).then(category => {
         if (category[0]) {
-          item.category = category[0];
+          if (resumed) {
+            resumedObj['category'] = category[0]['name'];
+          } else {
+            item.category = category[0];
+          }
         }
-      }); 
+      });
+
+      resumedArray.push(resumedObj);
     }
     
-    return this.customerService.returnWithCreatedAndModifierUser(res);
+    return resumed
+      ? Promise.resolve(resumedArray)
+      : this.customerService.returnWithCreatedAndModifierUser(res);
   }
 
   public async setModel(req: any, id?: string): Promise<Object> {

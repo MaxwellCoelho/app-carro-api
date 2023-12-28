@@ -8,7 +8,7 @@ export class BestRoutes {
 
     public route(app) {
 
-        app.get(['/api/best'], 
-            async (req: Request, res: Response) => this.bestController.returnBest(req, res));
+        app.get(['/api/best/models'], 
+            async (req: Request, res: Response) => this.bestController.returnBestModels(req, res));
     }
 }

@@ -56,7 +56,7 @@ const customerService = new CustomerService(cryptoService, uDate);
 const carService = new CarService(cryptoService, customerService, utils);
 const opinionService = new OpinionService(cryptoService, customerService, carService, uDate);
 const authService = new AuthService(cryptoService, customerService);
-const bestService = new BestService(opinionService);
+const bestService = new BestService(carService);
 
 // Instancia dos componentes injetáveis
 const testController = new TestController(testService, uDate);

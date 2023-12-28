@@ -1,14 +1,16 @@
 
-import { OpinionService } from '../services';
+import { CarService } from '../services';
 
 export class BestService {
 
     constructor(
-        private opinionService: OpinionService,
+        private carService: CarService,
       ) { }
 
-    public async getBest(): Promise<any> {
-        const opinions = this.opinionService.getOpinions(null, true);
-        return opinions;
+    public async getBestModels(): Promise<any> {
+        const models = await this.carService.getModels(null, true);
+        const sorted = models.sort((a, b) => parseFloat(b['average']) - parseFloat(a['average']));
+        
+        return sorted;
     }
 }
