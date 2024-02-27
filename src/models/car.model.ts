@@ -11,6 +11,8 @@ const categorySchema = new mongoose.Schema({
 
 const brandSchema = new mongoose.Schema({
     name: String,
+    average: Number,
+    val_length: Number,
     image: String,
     thumb: String,
     url: String,
@@ -25,6 +27,8 @@ const modelSchema = new mongoose.Schema({
     name: String,
     brand: Object,
     category: Object,
+    average: Number,
+    val_length: Number,
     image: String,
     thumb: String,
     url: String,

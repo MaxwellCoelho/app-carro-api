@@ -96,6 +96,8 @@ export class CarService {
     } else {
       let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, brandModel);
       createdPost['url'] = this.utils.sanitizeText(createdPost.name);
+      createdPost['average'] = 0;
+      createdPost['val_length'] = 0;
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
@@ -115,29 +117,64 @@ export class CarService {
   }
 
   // MODELS ---------------------------------------------------
-  public async getModels(filter?: any): Promise<Object> {
+  public async getModels(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? filter : {};
-    const res = await modelModel.find(myFilter).then(entries => entries);
+    let res;
+    const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
+    const pageSize = myPagination && myPagination.page ? myPagination.perpage : 50;
 
-    if (!res.length) {
+    try {
+      res = await modelModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize).then(entries => entries);
+    } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
 
+    const resumedArray: Object[] = [];
+
     for (const item of res) {
+      let resumedObj = {};
+
+      if (resumed) {
+        resumedObj = {
+          name: item['name'],
+          image: item['image'],
+          thumb: item['thumb'],
+          url: item['url'],
+          average: item['average'],
+          val_length: item['val_length'],
+        };
+      }
+
       await this.getBrands({ _id: item.brand }).then(brand => {
         if (brand[0]) {
-          item.brand = brand[0];
+          if (resumed) {
+            resumedObj['brand'] = {
+              name: brand[0]['name'],
+              image: brand[0]['image'],
+              url: brand[0]['url'],
+            }
+          } else {
+            item.brand = brand[0];
+          }
         }
       });
       
       await this.getCategories(item.category).then(category => {
         if (category[0]) {
-          item.category = category[0];
+          if (resumed) {
+            resumedObj['category'] = category[0]['name'];
+          } else {
+            item.category = category[0];
+          }
         }
-      }); 
+      });
+
+      resumedArray.push(resumedObj);
     }
     
-    return this.customerService.returnWithCreatedAndModifierUser(res);
+    return resumed
+      ? Promise.resolve(resumedArray)
+      : this.customerService.returnWithCreatedAndModifierUser(res);
   }
 
   public async setModel(req: any, id?: string): Promise<Object> {
@@ -162,6 +199,8 @@ export class CarService {
     } else {
       let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, modelModel);
       createdPost['url'] = this.utils.sanitizeText(createdPost.name);
+      createdPost['average'] = 0;
+      createdPost['val_length'] = 0;
       res['saved'] = await createdPost.save().then(savedPost => savedPost);
     }
 
@@ -178,6 +217,71 @@ export class CarService {
     return res
       ? Promise.resolve(res)
       : Promise.reject({ statusCode: 404 });
+  }
+
+  public async updateAverage(changedOpinion: Object, operation: 'set' | 'delete'): Promise<void> {
+    // BRAND -------------------------------------------------------------
+    const brandId = changedOpinion['brand'];
+    const brandAverage = changedOpinion['brand_val_average'];
+    let carBrand = await this.getBrands({ _id: brandId });
+    let newBrandValLenght: number;
+    let newBrandAverage: number;
+
+    switch (operation) {
+      case 'set':
+        newBrandValLenght = carBrand[0]['val_length'] + 1;
+        newBrandAverage = ((carBrand[0]['average'] * carBrand[0]['val_length']) + brandAverage) / newBrandValLenght;
+        break;
+      case 'delete':
+        newBrandValLenght = carBrand[0]['val_length'] - 1;
+        newBrandAverage = ((carBrand[0]['average'] * carBrand[0]['val_length']) - brandAverage) / newBrandValLenght;
+        break;
+    }
+    
+    const updateBrandPayload = {
+      name: carBrand[0]['name'],
+      image: carBrand[0]['image'],
+      active: carBrand[0]['active'],
+      average: newBrandAverage,
+      val_length: newBrandValLenght
+    }
+
+    const encodedBrand = this.cryptoService.encondeJwt(updateBrandPayload);
+    const userIdBrand = carBrand[0]['modified_by']['id'].toString();
+    this.setBrand({body: {data: encodedBrand}, user: {id: userIdBrand}}, brandId);
+
+    // MODEL -------------------------------------------------------------
+    const modelId = changedOpinion['model'];
+    const modelAverage = changedOpinion['car_val_average'];
+    const carModel = await this.getModels({ _id: modelId });
+    let newModelValLength: number;
+    let newModelAverage: number;
+
+    switch (operation) {
+      case 'set':
+        newModelValLength = carModel[0]['val_length'] + 1;
+        newModelAverage = ((carModel[0]['average'] * carModel[0]['val_length']) + modelAverage) / newModelValLength;
+        break;
+      case 'delete':
+        newModelValLength = carModel[0]['val_length'] - 1;
+        newModelAverage = ((carModel[0]['average'] * carModel[0]['val_length']) - modelAverage) / newModelValLength;
+        break;
+    }
+  
+    const updatedModelPayload = {
+      name: carModel[0]['name'],
+      category: carModel[0]['category']['_id'],
+      brand: carModel[0]['brand']['_id'],
+      image: carModel[0]['image'],
+      thumb: carModel[0]['thumb'],
+      active: carModel[0]['active'],
+      average: newModelAverage,
+      val_length: newModelValLength
+    };
+
+    const encodedModel = this.cryptoService.encondeJwt(updatedModelPayload);
+    const userIdModel = carModel[0]['modified_by']['id'].toString();
+    this.setModel({body: {data: encodedModel}, user: {id: userIdModel}}, modelId);
   }
 
 }

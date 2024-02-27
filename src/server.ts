@@ -15,7 +15,8 @@ import {
     CustomerRoutes,
     CarRoutes,
     OpinionRoutes,
-    AuthRoutes
+    AuthRoutes,
+    BestRoutes
 } from './routes';
 
 // Services
@@ -25,7 +26,8 @@ import {
     CarService,
     CryptoService,
     OpinionService,
-    AuthService
+    AuthService,
+    BestService
 } from './services';
 
 // Controllers
@@ -34,7 +36,8 @@ import {
     CustomerController,
     CarController,
     OpinionController,
-    AuthController
+    AuthController,
+    BestController
 } from './controllers';
 
 // Conexão com base de dados
@@ -53,6 +56,7 @@ const customerService = new CustomerService(cryptoService, uDate);
 const carService = new CarService(cryptoService, customerService, utils);
 const opinionService = new OpinionService(cryptoService, customerService, carService, uDate);
 const authService = new AuthService(cryptoService, customerService);
+const bestService = new BestService(carService);
 
 // Instancia dos componentes injetáveis
 const testController = new TestController(testService, uDate);
@@ -60,6 +64,7 @@ const customerController = new CustomerController(customerService, cryptoService
 const carController = new CarController(carService, cryptoService, uDate);
 const opinionController = new OpinionController(opinionService, cryptoService, uDate);
 const authController = new AuthController(authService, cryptoService, uDate);
+const bestController = new BestController(bestService, uDate);
 
 // INSTANCIA DAS ROTAS
 const testRoute = new TestRoutes(testController);
@@ -67,6 +72,7 @@ const customerRoute = new CustomerRoutes(customerController);
 const carRoute = new CarRoutes(carController);
 const opinionRoute = new OpinionRoutes(opinionController);
 const authRoute = new AuthRoutes(authController);
+const bestRoute = new BestRoutes(bestController);
 
 const server = express();
 
@@ -96,6 +102,7 @@ customerRoute.route(server);
 carRoute.route(server);
 opinionRoute.route(server);
 authRoute.route(server);
+bestRoute.route(server);
 
 server.listen(PORT, () => {
     uDate.timeConsoleLog(`Server running at http://localhost:${PORT}`);
