@@ -16,7 +16,7 @@ export class BestController extends ResponseModule {
 
     public async returnBestModels(req: Request, res: Response) {    
         try {
-          const responseService = await this.bestService.getBestModels();
+          const responseService = await this.bestService.getBestModels(req);
           return this.success(res, { bestModels: responseService });
         } catch (error) {
           this.uDate.timeConsoleLog('Erro ao chamar a api', error);

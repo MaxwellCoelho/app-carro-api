@@ -117,12 +117,14 @@ export class CarService {
   }
 
   // MODELS ---------------------------------------------------
-  public async getModels(filter?: any, resumed?: boolean): Promise<any> {
+  public async getModels(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? filter : {};
     let res;
+    const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
+    const pageSize = myPagination && myPagination.page ? myPagination.perpage : 50;
 
     try {
-      res = await modelModel.find(myFilter).then(entries => entries);
+      res = await modelModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize).then(entries => entries);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
@@ -149,6 +151,7 @@ export class CarService {
             resumedObj['brand'] = {
               name: brand[0]['name'],
               image: brand[0]['image'],
+              url: brand[0]['url'],
             }
           } else {
             item.brand = brand[0];
