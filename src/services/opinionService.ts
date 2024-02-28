@@ -43,12 +43,14 @@ export class OpinionService {
     }
   }
 
-  public async getOpinions(filter?: any, resumed?: boolean): Promise<any> {
+  public async getOpinions(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? filter : {};
     let res;
-    
+    const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
+    const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
+
     try {
-      res = await opinionModel.find(myFilter);
+      res = await opinionModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
@@ -147,7 +149,7 @@ export class OpinionService {
       const currentStatus = exists.opinions[0]['active'];
       const newStatus = req.body.data['active'];
       const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
-      res['saved'] = await opinionModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await opinionModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
 
       if (newStatus !== currentStatus) {
         const operation = currentStatus === false ? 'set' : 'delete';
@@ -155,12 +157,13 @@ export class OpinionService {
       }
     } else {
       const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, opinionModel);
-      res['saved'] = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save();
       this.carService.updateAverage(res['saved'], 'set');
     }
 
     if (req.user && req.user['role'] && req.user['role'].level < 2) {
-      res['opinions'] = await this.getOpinions();
+      const result = await this.getOpinions();
+      res['opinions'] = result['opinions'];
     }
 
     return Promise.resolve(res);
@@ -168,9 +171,10 @@ export class OpinionService {
 
   public async deleteOpinion(id: string): Promise<Object> {
     let res = {};
-    res['removed'] = await opinionModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['removed'] = await opinionModel.findByIdAndDelete({ _id: id });
     this.carService.updateAverage(res['removed'], 'delete');
-    res['opinions'] = await this.getOpinions();
+    const result = await this.getOpinions();
+    res['opinions'] = result['opinions'];
 
     return res
       ? Promise.resolve(res)
@@ -224,22 +228,25 @@ export class OpinionService {
       brand_title: brand.finalWords.title,
       brand_positive: brand.finalWords.positive,
       brand_negative: brand.finalWords.negative,
-      active: true,
+      active: req.body.data.active,
     }
 
-    const carAverage = this.getAverage(car.valuation);
-    const brandAverage = this.getAverage(brand.valuation);
-
-    for (const key of Object.keys(this.sum.car)) {
-      payload[`car_val_${key}`] = key === 'average'
-        ? carAverage
-        : car.valuation[key];
+    if (car.valuation) {
+      const carAverage = this.getAverage(car.valuation);
+      for (const key of Object.keys(this.sum.car)) {
+        payload[`car_val_${key}`] = key === 'average'
+          ? carAverage
+          : car.valuation[key];
+      }
     }
 
-    for (const key of Object.keys(this.sum.brand)) {
-      payload[`brand_val_${key}`] = key === 'average'
-        ? brandAverage
-        : brand.valuation[key];
+    if (brand.valuation) {
+      const brandAverage = this.getAverage(brand.valuation);
+      for (const key of Object.keys(this.sum.brand)) {
+        payload[`brand_val_${key}`] = key === 'average'
+          ? brandAverage
+          : brand.valuation[key];
+      }
     }
 
     req.body.data = payload;

@@ -75,11 +75,11 @@ export class CustomerService {
         modifiedPost['password'] = this.cryptoService.encriptPassword(modifiedPost['password']);
       }
 
-      res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
     } else {
       const createdPost = this.setCreatedAndModifierUser(req, idExists, customerModel);
       createdPost.password = this.cryptoService.encriptPassword(createdPost.password);
-      res['saved'] = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save();
     }
 
     if (req.user && req.user['role'] && req.user['role'].level < 2) {
@@ -91,7 +91,7 @@ export class CustomerService {
 
   public async deleteCustomer(id: string): Promise<Object> {
     let res = {};
-    res['removed'] = await customerModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['removed'] = await customerModel.findByIdAndDelete({ _id: id });
     res['customers'] = await this.getCustomers();
 
     return res
@@ -129,10 +129,10 @@ export class CustomerService {
 
     if (exists) {
       const modifiedPost = this.setCreatedAndModifierUser(req, exists);
-      res['saved'] = await roleModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await roleModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
     } else {
       const createdPost = this.setCreatedAndModifierUser(req, exists, roleModel);
-      res['saved'] = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save();
     }
 
     res['roles'] = await this.getRoles();
@@ -142,7 +142,7 @@ export class CustomerService {
 
   public async deleteRole(id: string): Promise<Object> {
     let res = {};
-    res['removed'] = await roleModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['removed'] = await roleModel.findByIdAndDelete({ _id: id });
     res['roles'] = await this.getRoles();
 
     return res

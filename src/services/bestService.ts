@@ -7,17 +7,16 @@ export class BestService {
         private carService: CarService,
       ) { }
 
-    public async getBestModels(req: Request): Promise<any> {
+    public async getBestModels(pagination: any): Promise<any> {
         let sort = { average: 'desc' };
-        let pagination = {};
+        let res;
 
-        if (req.query['page'] && req.query['perpage']) {
-            pagination = {
-                page: Number(req.query['page']),
-                perpage: Number(req.query['perpage'])
-            }
+        try {
+            res = await this.carService.getModels(null, true, sort, pagination);
+        } catch (error) {
+            return Promise.reject({ statusCode: 401 });
         }
 
-        return await this.carService.getModels(null, true, sort, pagination);
+        return Promise.resolve(res);
     }
 }

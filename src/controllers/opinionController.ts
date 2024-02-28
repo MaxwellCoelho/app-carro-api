@@ -21,12 +21,21 @@ export class OpinionController extends ResponseModule {
     const brand: string = req.params.brand;
     const car: string = req.params.car;
     let myFilter = {};
+    let pagination = {};
+
+    if (req.query['page'] && req.query['perpage']) {
+      pagination = {
+          page: Number(req.query['page']),
+          perpage: Number(req.query['perpage'])
+      }
+    }  
 
     if (brand) { myFilter['brand'] = brand; }
     if (brand && car) { myFilter['model'] = car; }
+    if (brand || car) { myFilter['active'] = true; }
 
     try {
-      const responseService = await this.opinionService.getOpinions(myFilter);
+      const responseService = await this.opinionService.getOpinions(myFilter, false, null, pagination);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
