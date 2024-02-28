@@ -43,12 +43,14 @@ export class OpinionService {
     }
   }
 
-  public async getOpinions(filter?: any, resumed?: boolean): Promise<any> {
+  public async getOpinions(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? filter : {};
     let res;
-    
+    const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
+    const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
+
     try {
-      res = await opinionModel.find(myFilter);
+      res = await opinionModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
@@ -147,7 +149,7 @@ export class OpinionService {
       const currentStatus = exists.opinions[0]['active'];
       const newStatus = req.body.data['active'];
       const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
-      res['saved'] = await opinionModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await opinionModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
 
       if (newStatus !== currentStatus) {
         const operation = currentStatus === false ? 'set' : 'delete';
@@ -155,7 +157,7 @@ export class OpinionService {
       }
     } else {
       const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, opinionModel);
-      res['saved'] = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save();
       this.carService.updateAverage(res['saved'], 'set');
     }
 
@@ -168,7 +170,7 @@ export class OpinionService {
 
   public async deleteOpinion(id: string): Promise<Object> {
     let res = {};
-    res['removed'] = await opinionModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['removed'] = await opinionModel.findByIdAndDelete({ _id: id });
     this.carService.updateAverage(res['removed'], 'delete');
     res['opinions'] = await this.getOpinions();
 

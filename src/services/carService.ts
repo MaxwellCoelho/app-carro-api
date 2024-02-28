@@ -15,10 +15,12 @@ export class CarService {
   // CATEGORIES ---------------------------------------------------
   public async getCategories(id?: string): Promise<Object> {
     let filter = id ? { _id: id } : {};
-    const res = await categoryModel.find(filter).then(entries => entries);
+    let res;
 
-    if (!res.length) {
-      Promise.reject({ statusCode: 404 });
+    try {
+      res = await categoryModel.find(filter);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
     }
   
     return this.customerService.returnWithCreatedAndModifierUser(res);
@@ -41,10 +43,10 @@ export class CarService {
 
     if (exists) {
       const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
-      res['saved'] = await categoryModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await categoryModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
     } else {
       const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, categoryModel);
-      res['saved'] = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save();
     }
 
     res['categories'] = await this.getCategories();
@@ -54,7 +56,7 @@ export class CarService {
 
   public async deleteCategory(id: string): Promise<Object> {
     let res = {};
-    res['removed'] = await categoryModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['removed'] = await categoryModel.findByIdAndDelete({ _id: id });
     res['categories'] = await this.getCategories();
 
     return res
@@ -63,11 +65,15 @@ export class CarService {
   }
 
   // BRANDS ---------------------------------------------------
-  public async getBrands(filter?: any): Promise<Object> {
+  public async getBrands(filter?: any, mySort?: any, myPagination?: any): Promise<Object> {
     let myFilter = filter ? filter : {};
-    const res = await brandModel.find(myFilter).then(entries => entries);
-    
-    if (!res.length) {
+    let res;
+    const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
+    const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
+
+    try {
+      res = await brandModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize);
+    } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
   
@@ -92,13 +98,13 @@ export class CarService {
     if (exists) {
       let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       modifiedPost['url'] = this.utils.sanitizeText(modifiedPost.name);
-      res['saved'] = await brandModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await brandModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
     } else {
       let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, brandModel);
       createdPost['url'] = this.utils.sanitizeText(createdPost.name);
       createdPost['average'] = 0;
       createdPost['val_length'] = 0;
-      res['saved'] = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save();
     }
 
     res['brands'] = await this.getBrands();
@@ -108,7 +114,7 @@ export class CarService {
 
   public async deleteBrand(id: string): Promise<Object> {
     let res = {};
-    res['removed'] = await brandModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['removed'] = await brandModel.findByIdAndDelete({ _id: id });
     res['brands'] = await this.getBrands();
 
     return res
@@ -121,10 +127,10 @@ export class CarService {
     let myFilter = filter ? filter : {};
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
-    const pageSize = myPagination && myPagination.page ? myPagination.perpage : 50;
+    const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
 
     try {
-      res = await modelModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize).then(entries => entries);
+      res = await modelModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
@@ -195,13 +201,13 @@ export class CarService {
     if (exists) {
       let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       modifiedPost['url'] = this.utils.sanitizeText(modifiedPost.name);
-      res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true }).then(savedPost => savedPost);
+      res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
     } else {
       let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, modelModel);
       createdPost['url'] = this.utils.sanitizeText(createdPost.name);
       createdPost['average'] = 0;
       createdPost['val_length'] = 0;
-      res['saved'] = await createdPost.save().then(savedPost => savedPost);
+      res['saved'] = await createdPost.save();
     }
 
     res['models'] = await this.getModels();
@@ -211,7 +217,7 @@ export class CarService {
 
   public async deleteModel(id: string): Promise<Object> {
     let res = {};
-    res['removed'] = await modelModel.findByIdAndDelete({ _id: id }).then(savedPost => savedPost);
+    res['removed'] = await modelModel.findByIdAndDelete({ _id: id });
     res['models'] = await this.getModels();
 
     return res
