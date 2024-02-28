@@ -162,7 +162,8 @@ export class OpinionService {
     }
 
     if (req.user && req.user['role'] && req.user['role'].level < 2) {
-      res['opinions'] = await this.getOpinions();
+      const result = await this.getOpinions();
+      res['opinions'] = result['opinions'];
     }
 
     return Promise.resolve(res);
@@ -172,7 +173,8 @@ export class OpinionService {
     let res = {};
     res['removed'] = await opinionModel.findByIdAndDelete({ _id: id });
     this.carService.updateAverage(res['removed'], 'delete');
-    res['opinions'] = await this.getOpinions();
+    const result = await this.getOpinions();
+    res['opinions'] = result['opinions'];
 
     return res
       ? Promise.resolve(res)
@@ -226,22 +228,25 @@ export class OpinionService {
       brand_title: brand.finalWords.title,
       brand_positive: brand.finalWords.positive,
       brand_negative: brand.finalWords.negative,
-      active: true,
+      active: req.body.data.active,
     }
 
-    const carAverage = this.getAverage(car.valuation);
-    const brandAverage = this.getAverage(brand.valuation);
-
-    for (const key of Object.keys(this.sum.car)) {
-      payload[`car_val_${key}`] = key === 'average'
-        ? carAverage
-        : car.valuation[key];
+    if (car.valuation) {
+      const carAverage = this.getAverage(car.valuation);
+      for (const key of Object.keys(this.sum.car)) {
+        payload[`car_val_${key}`] = key === 'average'
+          ? carAverage
+          : car.valuation[key];
+      }
     }
 
-    for (const key of Object.keys(this.sum.brand)) {
-      payload[`brand_val_${key}`] = key === 'average'
-        ? brandAverage
-        : brand.valuation[key];
+    if (brand.valuation) {
+      const brandAverage = this.getAverage(brand.valuation);
+      for (const key of Object.keys(this.sum.brand)) {
+        payload[`brand_val_${key}`] = key === 'average'
+          ? brandAverage
+          : brand.valuation[key];
+      }
     }
 
     req.body.data = payload;

@@ -32,6 +32,7 @@ export class OpinionController extends ResponseModule {
 
     if (brand) { myFilter['brand'] = brand; }
     if (brand && car) { myFilter['model'] = car; }
+    if (brand || car) { myFilter['active'] = true; }
 
     try {
       const responseService = await this.opinionService.getOpinions(myFilter, false, null, pagination);
