@@ -77,10 +77,6 @@ export class CarController extends ResponseModule {
   }
 
   public async saveBrand(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
-      return this.unauthorized(res);
-    }
-
     const id: string = req.params.id;
 
     try {
@@ -141,35 +137,90 @@ export class CarController extends ResponseModule {
   }
 
   public async saveModel(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
-      return this.unauthorized(res);
-    }
-
     const id: string = req.params.id;
     
     try {
       const responseService = await this.carService.setModel(req, id);
-      return this.success(res, responseService);
-    } catch (error) {
-      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
-      return this.errorHandler(error, res);
+        return this.success(res, responseService);
+      } catch (error) {
+        this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+        return this.errorHandler(error, res);
+      }
     }
-  }
 
-  public async removeModel(req: Request, res: Response) {
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-      return this.unauthorized(res);
+    public async removeModel(req: Request, res: Response) {
+      if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+        return this.unauthorized(res);
+      }
+      
+      const id: string = req.params.id;
+
+      try {
+        const responseService = await this.carService.deleteModel(id);
+        return this.success(res, responseService);
+      } catch (error) {
+        this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+        return this.errorHandler(error, res);
+      }
     }
-    
+  
+  // VERSIONS ---------------------------------------------------
+  public async returnVersion(req: Request, res: Response) {
     const id: string = req.params.id;
+    let myFilter = id ? { _id: id } : {};
 
     try {
-      const responseService = await this.carService.deleteModel(id);
-      return this.success(res, responseService);
+      const responseService = await this.carService.getVersion(myFilter);
+      return this.success(res, { versions: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.errorHandler(error, res);
     }
   }
-  
+
+  public async returnFilteredVersion(req: Request, res: Response) { 
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    let myFilter = req.body.data;
+
+    try {
+      const responseService = await this.carService.getVersion(myFilter);
+      return this.success(res, { versions: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
+
+  public async saveVersion(req: Request, res: Response) {
+    const id: string = req.params.id;
+    
+    try {
+      const responseService = await this.carService.setVersion(req, id);
+        return this.success(res, responseService);
+      } catch (error) {
+        this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+        return this.errorHandler(error, res);
+      }
+    }
+
+    public async removeVersion(req: Request, res: Response) {
+      if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+        return this.unauthorized(res);
+      }
+      
+      const id: string = req.params.id;
+
+      try {
+        const responseService = await this.carService.deleteVersion(id);
+        return this.success(res, responseService);
+      } catch (error) {
+        this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+        return this.errorHandler(error, res);
+      }
+    }
 }

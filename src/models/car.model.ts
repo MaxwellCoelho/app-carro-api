@@ -17,6 +17,7 @@ const brandSchema = new mongoose.Schema({
     thumb: String,
     url: String,
     active: Boolean,
+    review: Boolean,
     created_by: Object,
     created: String,
     modified_by: Object,
@@ -33,6 +34,18 @@ const modelSchema = new mongoose.Schema({
     thumb: String,
     url: String,
     active: Boolean,
+    review: Boolean,
+    created_by: Object,
+    created: String,
+    modified_by: Object,
+    modified: String
+});
+
+const versionSchema = new mongoose.Schema({
+    name: String,
+    model: Object,
+    active: Boolean,
+    review: Boolean,
     created_by: Object,
     created: String,
     modified_by: Object,
@@ -42,3 +55,4 @@ const modelSchema = new mongoose.Schema({
 export const categoryModel = mongoose.model('carcategories', categorySchema);
 export const brandModel = mongoose.model('carbrands', brandSchema);
 export const modelModel = mongoose.model('carmodels', modelSchema);
+export const versionModel = mongoose.model('carversions', versionSchema);
