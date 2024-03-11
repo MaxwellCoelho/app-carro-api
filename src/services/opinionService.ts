@@ -109,7 +109,7 @@ export class OpinionService {
 
     if (showCarAverages) {
       for (let i = 0; i < carKeys.length; i++) {
-        this.sum.car[carKeys[i]] = parseFloat((this.sum.car[carKeys[i]] / qtd).toFixed(1));
+        this.sum.car[carKeys[i]] = parseFloat((this.sum.car[carKeys[i]] / qtd).toFixed(20));
       }
 
       response['averages'] = this.sum.car;
@@ -118,7 +118,7 @@ export class OpinionService {
 
     if (showBrandAverages) {
       for (let i = 0; i < brandKeys.length; i++) {
-        this.sum.brand[brandKeys[i]] = parseFloat((this.sum.brand[brandKeys[i]] / qtd).toFixed(1));
+        this.sum.brand[brandKeys[i]] = parseFloat((this.sum.brand[brandKeys[i]] / qtd).toFixed(20));
       }
 
       response['averages'] = this.sum.brand;
