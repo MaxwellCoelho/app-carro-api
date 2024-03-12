@@ -181,15 +181,21 @@ export class CustomerService {
     if (exists) {
       postPayload = {
         ...req.body.data,
-        modified: timeStamp,
-        modified_by: req.user.id
+        modified: timeStamp
       };
+
+      if (req.user) {
+        postPayload.modified_by = req.user.id;
+      }
     } else {
       postPayload = new model(req.body.data);
       postPayload.created = timeStamp;
-      postPayload.created_by = req.user.id;
       postPayload.modified = timeStamp;
-      postPayload.modified_by = req.user.id;
+
+      if (req.user) {
+        postPayload.created_by = req.user.id;
+        postPayload.modified_by = req.user.id;
+      }
     }
 
     return postPayload;

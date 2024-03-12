@@ -39,5 +39,18 @@ export class CarRoutes {
 
         app.delete('/api/cars/models/:id', 
             async (req: Request, res: Response) => this.carController.removeModel(req, res));
+
+        // VERSIONS ---------------------------------------------------
+        app.get(['/api/cars/versions', '/api/cars/versions/:id'], 
+        async (req: Request, res: Response) => this.carController.returnVersion(req, res));
+
+        app.post('/api/cars/versions/filter', 
+            async (req: Request, res: Response) => this.carController.returnFilteredVersion(req, res));
+
+        app.post(['/api/cars/versions', '/api/cars/versions/:id'], 
+            async (req: Request, res: Response) => this.carController.saveVersion(req, res));
+
+        app.delete('/api/cars/versions/:id', 
+            async (req: Request, res: Response) => this.carController.removeVersion(req, res));
     }
 }

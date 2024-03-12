@@ -43,8 +43,9 @@ export class OpinionService {
     }
   }
 
-  public async getOpinions(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
+  public async getOpinions(filter?: any, resumed?: boolean, sorted?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? filter : {};
+    let mySort = sorted ? sorted : { _id: 'desc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
     const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
@@ -108,7 +109,7 @@ export class OpinionService {
 
     if (showCarAverages) {
       for (let i = 0; i < carKeys.length; i++) {
-        this.sum.car[carKeys[i]] = parseFloat((this.sum.car[carKeys[i]] / qtd).toFixed(1));
+        this.sum.car[carKeys[i]] = parseFloat((this.sum.car[carKeys[i]] / qtd).toFixed(20));
       }
 
       response['averages'] = this.sum.car;
@@ -117,7 +118,7 @@ export class OpinionService {
 
     if (showBrandAverages) {
       for (let i = 0; i < brandKeys.length; i++) {
-        this.sum.brand[brandKeys[i]] = parseFloat((this.sum.brand[brandKeys[i]] / qtd).toFixed(1));
+        this.sum.brand[brandKeys[i]] = parseFloat((this.sum.brand[brandKeys[i]] / qtd).toFixed(20));
       }
 
       response['averages'] = this.sum.brand;
@@ -144,6 +145,7 @@ export class OpinionService {
 
     const dataReq = await this.setDataPayload(req);
     req = dataReq;
+    let operation;
 
     if (exists) {
       const currentStatus = exists.opinions[0]['active'];
@@ -152,14 +154,16 @@ export class OpinionService {
       res['saved'] = await opinionModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
 
       if (newStatus !== currentStatus) {
-        const operation = currentStatus === false ? 'set' : 'delete';
-        this.carService.updateAverage(res['saved'], operation);
+        operation = currentStatus === false ? 'set' : 'delete';
       }
     } else {
       const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, opinionModel);
       res['saved'] = await createdPost.save();
-      this.carService.updateAverage(res['saved'], 'set');
+      operation = 'set';
     }
+
+    const currentOpinions = await this.getOpinions({ model: res['saved']['model'] }, true);
+    this.carService.updateAverage(res['saved'], operation, currentOpinions);
 
     if (req.user && req.user['role'] && req.user['role'].level < 2) {
       const result = await this.getOpinions();
@@ -204,7 +208,7 @@ export class OpinionService {
         let newUserPayload = await this.setNewUserPayload(user); 
         const createdUser = await this.customerService.setCustomer(newUserPayload);
 
-        customerId = createdUser['_id'];
+        customerId = createdUser['saved']['_id'];
       }
 
       req['user'] = {
