@@ -67,12 +67,13 @@ export class CarService {
   // BRANDS ---------------------------------------------------
   public async getBrands(filter?: any, mySort?: any, myPagination?: any): Promise<Object> {
     let myFilter = filter ? filter : {};
+    let sorted = mySort ? mySort : { name: 'asc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
     const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
 
     try {
-      res = await brandModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize);
+      res = await brandModel.find(myFilter).sort(sorted).skip(offset).limit(pageSize);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
@@ -125,12 +126,13 @@ export class CarService {
   // MODELS ---------------------------------------------------
   public async getModels(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? filter : {};
+    let sorted = mySort ? mySort : { name: 'asc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
     const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
 
     try {
-      res = await modelModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize);
+      res = await modelModel.find(myFilter).sort(sorted).skip(offset).limit(pageSize);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
@@ -165,15 +167,17 @@ export class CarService {
         }
       });
       
-      await this.getCategories(item.category).then(category => {
-        if (category[0]) {
-          if (resumed) {
-            resumedObj['category'] = category[0]['name'];
-          } else {
-            item.category = category[0];
+      if (item.category) {
+        await this.getCategories(item.category).then(category => {
+          if (category[0]) {
+            if (resumed) {
+              resumedObj['category'] = category[0]['name'];
+            } else {
+              item.category = category[0];
+            }
           }
-        }
-      });
+        });
+      }
 
       resumedArray.push(resumedObj);
     }
