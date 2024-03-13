@@ -144,12 +144,15 @@ export class CarService {
 
       if (resumed) {
         resumedObj = {
+          _id: item['_id'],
           name: item['name'],
           image: item['image'],
           thumb: item['thumb'],
           url: item['url'],
           average: item['average'],
           val_length: item['val_length'],
+          active: item['active'],
+          review: item['review']
         };
       }
 
@@ -157,9 +160,12 @@ export class CarService {
         if (brand[0]) {
           if (resumed) {
             resumedObj['brand'] = {
+              _id: brand[0]['_id'],
               name: brand[0]['name'],
               image: brand[0]['image'],
               url: brand[0]['url'],
+              active: brand[0]['active'],
+              review: brand[0]['review']
             }
           } else {
             item.brand = brand[0];
