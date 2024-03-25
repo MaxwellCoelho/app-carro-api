@@ -82,9 +82,9 @@ export class CustomerService {
       res['saved'] = await createdPost.save();
     }
 
-    if (req.user && req.user['role'] && req.user['role'].level < 2) {
-      res['customers'] = await this.getCustomers();
-    }
+    // if (req.user && req.user['role'] && req.user['role'].level < 2) {
+    //   res['customers'] = await this.getCustomers();
+    // }
 
     return Promise.resolve(res);
   }
@@ -135,7 +135,7 @@ export class CustomerService {
       res['saved'] = await createdPost.save();
     }
 
-    res['roles'] = await this.getRoles();
+    // res['roles'] = await this.getRoles();
 
     return Promise.resolve(res);
   }

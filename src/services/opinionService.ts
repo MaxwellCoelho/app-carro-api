@@ -98,6 +98,12 @@ export class OpinionService {
       if (resumed) {
         const {_id, model, car_val_average, brand_val_average, active, created, created_by, modified, modified_by } = item;
         filteredItems.push({_id, model, car_val_average, brand_val_average, active, created, created_by, modified, modified_by });
+      } else {
+        await this.carService.getVersion({ _id: item.version }).then(version => {
+          if (version[0]) {
+            item.version = version[0];
+          }
+        }); 
       }
     }
   
@@ -165,10 +171,10 @@ export class OpinionService {
     const currentOpinions = await this.getOpinions({ model: res['saved']['model'] }, true);
     this.carService.updateAverage(res['saved'], operation, currentOpinions);
 
-    if (req.user && req.user['role'] && req.user['role'].level < 2) {
-      const result = await this.getOpinions();
-      res['opinions'] = result['opinions'];
-    }
+    // if (req.user && req.user['role'] && req.user['role'].level < 2) {
+    //   const result = await this.getOpinions();
+    //   res['opinions'] = result['opinions'];
+    // }
 
     return Promise.resolve(res);
   }
@@ -219,9 +225,7 @@ export class OpinionService {
     const payload = {
       customer: customerId,
       model: car.carModel,
-      year_model: car.yearModel,
-      fuel: car.fuel,
-      engine: car.engine,
+      version: car.carVersion,
       year_bought: car.yearBought,
       kept_period: car.keptPeriod,
       km_bought: car.kmBought,
@@ -259,7 +263,7 @@ export class OpinionService {
 
   public async setNewUserPayload(user) {
     const randomPassword = this.cryptoService.randomPasswordGenerator();
-    console.log('password gerado: '+randomPassword);
+    // console.log('password gerado: '+randomPassword); senha aleatoria
     let roleId;
     
     await this.customerService.getRoles({ level: 3 }).then(role => {
