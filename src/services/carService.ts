@@ -49,7 +49,7 @@ export class CarService {
       res['saved'] = await createdPost.save();
     }
 
-    res['categories'] = await this.getCategories();
+    // res['categories'] = await this.getCategories();
 
     return Promise.resolve(res);
   }
@@ -108,7 +108,7 @@ export class CarService {
       res['saved'] = await createdPost.save();
     }
 
-    res['brands'] = await this.getBrands();
+    // res['brands'] = await this.getBrands();
 
     return Promise.resolve(res);
   }
@@ -220,7 +220,7 @@ export class CarService {
       res['saved'] = await createdPost.save();
     }
 
-    res['models'] = await this.getModels();
+    // res['models'] = await this.getModels();
 
     return Promise.resolve(res);
   }
@@ -304,7 +304,7 @@ export class CarService {
       res['saved'] = await createdPost.save();
     }
 
-    res['versions'] = await this.getModels();
+    // res['versions'] = await this.getVersion();
 
     return Promise.resolve(res);
   }

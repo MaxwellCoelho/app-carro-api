@@ -3,9 +3,7 @@ import * as mongoose from 'mongoose';
 const opinionSchema = new mongoose.Schema({
     customer: Object,
     model: Object,
-    year_model: String,
-    fuel: String,
-    engine: String,
+    version: Object,
     year_bought: String,
     kept_period: Number,
     km_bought: Number,
