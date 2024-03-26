@@ -1,5 +1,6 @@
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
+import * as path from 'path';
 import * as mongoose from 'mongoose';
 import "dotenv/config";
 
@@ -103,6 +104,13 @@ carRoute.route(server);
 opinionRoute.route(server);
 authRoute.route(server);
 bestRoute.route(server);
+
+// Rodar frontend buildado do projeto app-carro
+server.use(express.static('www'));
+
+server.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../www/index.html')); // replace 'path_to_your_index.html' with the actual path to your Angular app's index.html
+});
 
 server.listen(PORT, () => {
     uDate.timeConsoleLog(`Server running at http://localhost:${PORT}`);

@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "CommonJS",
+    "lib": ["dom", "es6", "es2017", "esnext.asynciterable"],
+    "sourceMap": false,
+    "outDir": "dist",
+    "rootDir": "src",
+    "types": ["node"],
+    "moduleResolution": "node",
+    "baseUrl": ".",
+  },
+  "exclude": ["node_modules"]
+}
