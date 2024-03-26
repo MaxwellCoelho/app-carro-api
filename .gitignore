@@ -1,7 +1,6 @@
 **/node_modules/
 launch.json
 /dist/
-/www/
 /.vscode/
 /documentation
 .nyc_output/
