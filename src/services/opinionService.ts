@@ -225,6 +225,7 @@ export class OpinionService {
     const payload = {
       customer: customerId,
       model: car.carModel,
+      year_model: car.yearModel,
       version: car.carVersion,
       year_bought: car.yearBought,
       kept_period: car.keptPeriod,
