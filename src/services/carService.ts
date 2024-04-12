@@ -296,11 +296,27 @@ export class CarService {
 
     let res = {};
 
+    const choosenYear = parseInt(req.body.data.year);
+    delete req.body.data.year;
+
     if (exists) {
+      if (choosenYear) {
+        if (!exists[0].years || !exists[0].years.length) {
+          req.body.data['years'] = [choosenYear];
+        } else if (exists[0].years.indexOf(choosenYear) < 0) {
+          req.body.data['years'] = [...new Set([...exists[0].years, ...[choosenYear]])];
+        } else {
+          req.body.data['years'] = exists[0].years || [];
+        }
+      }
       let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       res['saved'] = await versionModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
     } else {
+      if (choosenYear) {
+        req.body.data['years'] = [choosenYear];
+      }
       let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, versionModel);
+      delete createdPost.year;
       res['saved'] = await createdPost.save();
     }
 

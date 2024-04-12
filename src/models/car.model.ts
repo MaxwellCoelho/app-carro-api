@@ -42,8 +42,14 @@ const modelSchema = new mongoose.Schema({
 });
 
 const versionSchema = new mongoose.Schema({
-    name: String,
+    engine: Number,
+    fuel: String,
+    gearbox: String,
+    years: Array,
+    complement: String,
     model: Object,
+    image: String,
+    thumb: String,
     active: Boolean,
     review: Boolean,
     created_by: Object,

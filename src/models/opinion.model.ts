@@ -4,6 +4,7 @@ const opinionSchema = new mongoose.Schema({
     customer: Object,
     model: Object,
     version: Object,
+    year_model: String,
     year_bought: String,
     kept_period: Number,
     km_bought: Number,
