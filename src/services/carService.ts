@@ -398,13 +398,16 @@ export class CarService {
     }
 
     const encodedBrand = this.cryptoService.encondeJwt(updateBrandPayload);
-    const userIdBrand = carBrand[0]['modified_by']['id'].toString();
-    this.setBrand({body: {data: encodedBrand}, user: {id: userIdBrand}}, brandId);
+    const userIdBrand = carBrand[0]['modified_by'] ? carBrand[0]['modified_by']['id'].toString() : null;
+    const brandPayload = {body: {data: encodedBrand}};
+    if (userIdBrand) {
+      brandPayload['user'] = {id: userIdBrand};
+    }
+    this.setBrand(brandPayload, brandId);
 
     // MODEL -------------------------------------------------------------
     const updatedModelPayload = {
       name: carModel[0]['name'],
-      category: carModel[0]['category']['_id'],
       brand: carModel[0]['brand']['_id'],
       image: carModel[0]['image'],
       thumb: carModel[0]['thumb'],
@@ -414,9 +417,17 @@ export class CarService {
       val_length: newModelValLength
     };
 
+    if (carModel[0]['category']) {
+      updatedModelPayload['category'] = carModel[0]['category']['_id'];
+    }
+
     const encodedModel = this.cryptoService.encondeJwt(updatedModelPayload);
-    const userIdModel = carModel[0]['modified_by']['id'].toString();
-    this.setModel({body: {data: encodedModel}, user: {id: userIdModel}}, modelId);
+    const userIdModel = carModel[0]['modified_by'] ? carModel[0]['modified_by']['id'].toString() : null;
+    const modelPayload = {body: {data: encodedModel}};
+    if (userIdModel) {
+      modelPayload['user'] = {id: userIdModel};
+    }
+    this.setModel(modelPayload, modelId);
   }
 
 }
