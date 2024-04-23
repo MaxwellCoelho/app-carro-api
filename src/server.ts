@@ -88,7 +88,9 @@ server.use(bodyParser.urlencoded({ extended: false }));
 server.use((req, res, next) => {
     req.setTimeout(20000, function(){ req.destroy(); });
 
-    res.header('Access-Control-Allow-Origin', 'https://api.krro.com.br, http://localhost:4200');
+    res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
+    res.header('Access-Control-Allow-Origin', 'https://krro.com.br');
+    res.header('Access-Control-Allow-Origin', 'https://www.krro.com.br');
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', `Origin, X-Requested-With, Content-Type, Accept, X-Access-Token, Set-Cookie`);
