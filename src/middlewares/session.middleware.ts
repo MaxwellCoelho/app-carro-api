@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as session from "express-session";
 
 const MongoStore = require('connect-mongo');
+const mongoUri = `mongodb://${process.env.MONGO_USER}:${encodeURIComponent(process.env.MONGO_PWD)}@${process.env.MONGO_IP}:27017/appcarrodb?${process.env.MONGO_PARAMS}`;
 
 const sessionMiddleware = (req: Request, res: Response, next: NextFunction) => {
     return session({
@@ -9,7 +10,7 @@ const sessionMiddleware = (req: Request, res: Response, next: NextFunction) => {
         resave: false,
         saveUninitialized: false,
         store: MongoStore.create({
-            mongoUrl: process.env.MONGO_URI
+            mongoUrl: mongoUri
         }),
         cookie: { 
             maxAge: 30 * 60 * 60 * 60 * 1000
