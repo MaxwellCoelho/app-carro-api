@@ -8,13 +8,13 @@ export class OpinionRoutes {
 
     public route(app) {
 
-        app.get(['/api/opinion', '/api/opinion/:brand', '/api/opinion/:brand/:car'], 
+        app.get(['/opinion', '/opinion/:brand', '/opinion/:brand/:car'], 
             async (req: Request, res: Response) => this.opinionController.returnOpinion(req, res));
 
-        app.post(['/api/opinion', '/api/opinion/:id'],
+        app.post(['/opinion', '/opinion/:id'],
             async (req: Request, res: Response) => this.opinionController.saveOpinion(req, res));
 
-        app.delete('/api/opinion/:id', 
+        app.delete('/opinion/:id', 
             async (req: Request, res: Response) => this.opinionController.removeOpinion(req, res));
     }
 }

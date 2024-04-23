@@ -88,7 +88,7 @@ server.use(bodyParser.urlencoded({ extended: false }));
 server.use((req, res, next) => {
     req.setTimeout(20000, function(){ req.destroy(); });
 
-    res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
+    res.header('Access-Control-Allow-Origin', 'https://api.krro.com.br, http://localhost:4200');
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', `Origin, X-Requested-With, Content-Type, Accept, X-Access-Token, Set-Cookie`);
@@ -106,11 +106,11 @@ authRoute.route(server);
 bestRoute.route(server);
 
 // Rodar frontend buildado do projeto app-carro
-server.use(express.static('www'));
+// server.use(express.static('www'));
 
-server.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../www/index.html')); // replace 'path_to_your_index.html' with the actual path to your Angular app's index.html
-});
+// server.get('*', (req, res) => {
+//    res.sendFile(path.join(__dirname, '../www/index.html'));
+// });
 
 server.listen(PORT, () => {
     uDate.timeConsoleLog(`Server running at http://localhost:${PORT}`);
