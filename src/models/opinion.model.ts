@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-const opinionSchema = new mongoose.Schema({
+const opinionCarSchema = new mongoose.Schema({
     customer: Object,
     model: Object,
     version: Object,
@@ -19,7 +19,16 @@ const opinionSchema = new mongoose.Schema({
     car_title: String,
     car_positive: String,
     car_negative: String,
-    brand: String,
+    active: Boolean,
+    created_by: Object,
+    created: String,
+    modified_by: Object,
+    modified: String
+});
+
+const opinionBrandSchema = new mongoose.Schema({
+    customer: Object,
+    brand: Object,
     brand_val_services: Number,
     brand_val_people: Number,
     brand_val_prices: Number,
@@ -36,4 +45,5 @@ const opinionSchema = new mongoose.Schema({
     modified: String
 });
 
-export const opinionModel = mongoose.model('opinioncar', opinionSchema);
+export const opinionCarModel = mongoose.model('opinioncar', opinionCarSchema);
+export const opinionBrandModel = mongoose.model('opinionbrand', opinionBrandSchema);

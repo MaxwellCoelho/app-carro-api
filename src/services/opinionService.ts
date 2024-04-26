@@ -1,5 +1,5 @@
 import { config } from '../config/config';
-import { opinionModel } from '../models/opinion.model';
+import { opinionCarModel, opinionBrandModel } from '../models/opinion.model';
 import { CryptoService, CustomerService, CarService } from '../services';
 import { UDate } from '../utils';
 
@@ -43,26 +43,25 @@ export class OpinionService {
     }
   }
 
-  public async getOpinions(filter?: any, resumed?: boolean, sorted?: any, myPagination?: any): Promise<any> {
+  // BRAND ---------------------------------------------------
+  public async getBrandOpinions(filter?: any, resumed?: boolean, sorted?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? filter : {};
+    
     let mySort = sorted ? sorted : { _id: 'desc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
     const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
 
     try {
-      res = await opinionModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize);
+      res = await opinionBrandModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
 
     this.clearSum();
 
-    const carKeys = Object.keys(this.sum.car);
     const brandKeys = Object.keys(this.sum.brand);
-    const showCarAverages = myFilter.brand && myFilter.model;
-    const showBrandAverages = myFilter.brand && !myFilter.model;
-    const carModel = showCarAverages ? await this.carService.getModels({ _id: myFilter.model }) : [];
+    const showBrandAverages = myFilter.brand;
     const carBrand = showBrandAverages ? await this.carService.getBrands({ _id: myFilter.brand }) : [];
     let filteredItems: any[] = [];
     
@@ -75,7 +74,132 @@ export class OpinionService {
         });
       }
 
-      if (!showCarAverages && !showBrandAverages) {
+      if (!showBrandAverages) {
+        await this.carService.getBrands({ _id: item.brand }).then(brand => {
+          if (brand[0]) {
+            item.brand = brand[0];
+          }
+        }); 
+      }
+
+      if (showBrandAverages) {
+        for (let i = 0; i < brandKeys.length; i++) {
+          this.sum.brand[brandKeys[i]] += item[`brand_val_${brandKeys[i]}`];
+        }
+      }
+
+      if (resumed) {
+        const {_id, brand_val_average, active, created, created_by, modified, modified_by } = item;
+        filteredItems.push({_id, brand_val_average, active, created, created_by, modified, modified_by });
+      } 
+    }
+  
+    const qtd = res.length;
+    const response = {
+      opinions: await this.customerService.returnWithCreatedAndModifierUser(resumed ? filteredItems : res),
+      qtd: qtd
+    }
+
+    if (showBrandAverages) {
+      for (let i = 0; i < brandKeys.length; i++) {
+        this.sum.brand[brandKeys[i]] = parseFloat((this.sum.brand[brandKeys[i]] / qtd).toFixed(20));
+      }
+
+      response['averages'] = this.sum.brand;
+      response['brand'] = carBrand[0];
+    }
+
+    return response;
+  }
+
+  public async setBrandOpinions(req: any, id?: string): Promise<Object> {
+    let exists = id ? await this.getBrandOpinions({ _id: id }) : null;
+
+    if (id && !exists) {
+      return Promise.reject({ statusCode: 404 });
+    }
+
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    let res = {};
+
+    const dataReq = await this.setBrandDataPayload(req);
+    req = dataReq;
+    let operation;
+
+    if (exists) {
+      const currentStatus = exists.opinions[0]['active'];
+      const newStatus = req.body.data['active'];
+      const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
+      res['saved'] = await opinionBrandModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
+
+      if (newStatus !== currentStatus) {
+        operation = currentStatus === false ? 'set' : 'delete';
+      }
+    } else {
+      const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, opinionBrandModel);
+      res['saved'] = await createdPost.save();
+      operation = 'set';
+    }
+
+    const currentOpinions = await this.getBrandOpinions({ brand: res['saved']['brand'] }, true);
+    this.carService.updateBrandAverage(res['saved'], operation, currentOpinions);
+
+    // if (req.user && req.user['role'] && req.user['role'].level < 2) {
+    //   const result = await this.getBrandOpinions();
+    //   res['opinions'] = result['opinions'];
+    // }
+
+    return Promise.resolve(res);
+  }
+
+  public async deleteBrandOpinion(id: string): Promise<Object> {
+    let res = {};
+    res['removed'] = await opinionBrandModel.findByIdAndDelete({ _id: id });
+    this.carService.updateBrandAverage(res['removed'], 'delete');
+    const result = await this.getBrandOpinions();
+    res['opinions'] = result['opinions'];
+
+    return res
+      ? Promise.resolve(res)
+      : Promise.reject({ statusCode: 404 });
+  }
+
+  // MODEL ---------------------------------------------------
+  public async getModelOpinions(filter?: any, resumed?: boolean, sorted?: any, myPagination?: any): Promise<any> {
+    let myFilter = filter ? filter : {};
+    let mySort = sorted ? sorted : { _id: 'desc' };
+    let res;
+    const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
+    const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
+
+    try {
+      res = await opinionCarModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize);
+    } catch (error) {
+      Promise.reject({ statusCode: 404 });
+    }
+
+    this.clearSum();
+
+    const carKeys = Object.keys(this.sum.car);
+    const showCarAverages = myFilter.brand && myFilter.model;
+    const carModel = showCarAverages ? await this.carService.getModels({ _id: myFilter.model }) : [];
+    let filteredItems: any[] = [];
+    
+    for (const item of res) {
+      if (!resumed) {
+        await this.customerService.getCustomers({ _id: item.customer }, true).then(user => {
+          if (user[0]) {
+            item.customer = user[0];
+          }
+        });
+      }
+
+      if (!showCarAverages) {
         await this.carService.getModels({ _id: item.model }).then(model => {
           if (model[0]) {
             item.model = model[0];
@@ -89,15 +213,9 @@ export class OpinionService {
         }
       }
 
-      if (showBrandAverages) {
-        for (let i = 0; i < brandKeys.length; i++) {
-          this.sum.brand[brandKeys[i]] += item[`brand_val_${brandKeys[i]}`];
-        }
-      }
-
       if (resumed) {
-        const {_id, model, car_val_average, brand_val_average, active, created, created_by, modified, modified_by } = item;
-        filteredItems.push({_id, model, car_val_average, brand_val_average, active, created, created_by, modified, modified_by });
+        const {_id, model, car_val_average, active, created, created_by, modified, modified_by } = item;
+        filteredItems.push({_id, model, car_val_average, active, created, created_by, modified, modified_by });
       } else {
         await this.carService.getVersion({ _id: item.version }).then(version => {
           if (version[0]) {
@@ -122,20 +240,11 @@ export class OpinionService {
       response['model'] = carModel[0];
     }
 
-    if (showBrandAverages) {
-      for (let i = 0; i < brandKeys.length; i++) {
-        this.sum.brand[brandKeys[i]] = parseFloat((this.sum.brand[brandKeys[i]] / qtd).toFixed(20));
-      }
-
-      response['averages'] = this.sum.brand;
-      response['brand'] = carBrand[0];
-    }
-
     return response;
   }
 
-  public async setOpinions(req: any, id?: string): Promise<Object> {
-    let exists = id ? await this.getOpinions({ _id: id }) : null;
+  public async setModelOpinions(req: any, id?: string): Promise<Object> {
+    let exists = id ? await this.getModelOpinions({ _id: id }) : null;
 
     if (id && !exists) {
       return Promise.reject({ statusCode: 404 });
@@ -149,7 +258,7 @@ export class OpinionService {
 
     let res = {};
 
-    const dataReq = await this.setDataPayload(req);
+    const dataReq = await this.setModelDataPayload(req);
     req = dataReq;
     let operation;
 
@@ -157,33 +266,33 @@ export class OpinionService {
       const currentStatus = exists.opinions[0]['active'];
       const newStatus = req.body.data['active'];
       const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
-      res['saved'] = await opinionModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
+      res['saved'] = await opinionCarModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
 
       if (newStatus !== currentStatus) {
         operation = currentStatus === false ? 'set' : 'delete';
       }
     } else {
-      const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, opinionModel);
+      const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, opinionCarModel);
       res['saved'] = await createdPost.save();
       operation = 'set';
     }
 
-    const currentOpinions = await this.getOpinions({ model: res['saved']['model'] }, true);
-    this.carService.updateAverage(res['saved'], operation, currentOpinions);
+    const currentOpinions = await this.getModelOpinions({ model: res['saved']['model'] }, true);
+    this.carService.updateModelAverage(res['saved'], operation, currentOpinions);
 
     // if (req.user && req.user['role'] && req.user['role'].level < 2) {
-    //   const result = await this.getOpinions();
+    //   const result = await this.getModelOpinions();
     //   res['opinions'] = result['opinions'];
     // }
 
     return Promise.resolve(res);
   }
 
-  public async deleteOpinion(id: string): Promise<Object> {
+  public async deleteModelOpinion(id: string): Promise<Object> {
     let res = {};
-    res['removed'] = await opinionModel.findByIdAndDelete({ _id: id });
-    this.carService.updateAverage(res['removed'], 'delete');
-    const result = await this.getOpinions();
+    res['removed'] = await opinionCarModel.findByIdAndDelete({ _id: id });
+    this.carService.updateModelAverage(res['removed'], 'delete');
+    const result = await this.getModelOpinions();
     res['opinions'] = result['opinions'];
 
     return res
@@ -191,9 +300,60 @@ export class OpinionService {
       : Promise.reject({ statusCode: 404 });
   }
 
-  public async setDataPayload(req) {
-    const car = req.body.data.aboutCar;
+  public async setBrandDataPayload(req) {
     const brand = req.body.data.aboutBrand;
+    const user = req.body.data.userInfo;
+    let customerId;
+
+    if (req.isAuthenticated()) {
+      customerId = req.user.id;
+    } else {
+      let foundUser;
+
+      await this.customerService.getCustomers({ email: user.email }, true).then(user => {
+        if (user[0]) {
+          foundUser = user[0];
+        }
+      });
+
+      if (foundUser) {
+        customerId = foundUser['id'];
+      } else {
+        let newUserPayload = await this.setNewUserPayload(user); 
+        const createdUser = await this.customerService.setCustomer(newUserPayload);
+
+        customerId = createdUser['saved']['_id'];
+      }
+
+      req['user'] = {
+        id: customerId
+      }
+    }
+
+    const payload = {
+      customer: customerId,
+      brand: brand.carBrand,
+      brand_title: brand.finalWords.title,
+      brand_positive: brand.finalWords.positive,
+      brand_negative: brand.finalWords.negative,
+      active: req.body.data.active,
+    }
+
+    if (brand.valuation) {
+      const brandAverage = this.getAverage(brand.valuation);
+      for (const key of Object.keys(this.sum.brand)) {
+        payload[`brand_val_${key}`] = key === 'average'
+          ? brandAverage
+          : brand.valuation[key];
+      }
+    }
+
+    req.body.data = payload;
+    return req;
+  }
+
+  public async setModelDataPayload(req) {
+    const car = req.body.data.aboutCar;
     const user = req.body.data.userInfo;
     let customerId;
 
@@ -233,10 +393,6 @@ export class OpinionService {
       car_title: car.finalWords.title,
       car_positive: car.finalWords.positive,
       car_negative: car.finalWords.negative,
-      brand: brand.carBrand,
-      brand_title: brand.finalWords.title,
-      brand_positive: brand.finalWords.positive,
-      brand_negative: brand.finalWords.negative,
       active: req.body.data.active,
     }
 
@@ -246,15 +402,6 @@ export class OpinionService {
         payload[`car_val_${key}`] = key === 'average'
           ? carAverage
           : car.valuation[key];
-      }
-    }
-
-    if (brand.valuation) {
-      const brandAverage = this.getAverage(brand.valuation);
-      for (const key of Object.keys(this.sum.brand)) {
-        payload[`brand_val_${key}`] = key === 'average'
-          ? brandAverage
-          : brand.valuation[key];
       }
     }
 

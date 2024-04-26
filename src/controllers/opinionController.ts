@@ -17,7 +17,67 @@ export class OpinionController extends ResponseModule {
       super();
   }
 
-  public async returnOpinion(req: Request, res: Response) {
+  // BRAND ---------------------------------------------------
+  public async returnBrandOpinion(req: Request, res: Response) {
+    const brand: string = req.params.brand;
+    let myFilter = {};
+    let pagination = {};
+
+    if (req.query['page'] && req.query['perpage']) {
+      pagination = {
+          page: Number(req.query['page']),
+          perpage: Number(req.query['perpage'])
+      }
+    }  
+
+    if (brand) {
+      myFilter['brand'] = brand;
+      myFilter['active'] = true;
+    }
+
+    try {
+      const responseService = await this.opinionService.getBrandOpinions(myFilter, false, null, pagination);
+      return this.success(res, responseService);
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
+
+  public async saveBrandOpinion(req: Request, res: Response) {
+    // if (!req.isAuthenticated()) {
+    //   return this.unauthorized(res);
+    // }
+
+    const id: string = req.params.id;
+
+    try {
+      const responseService = await this.opinionService.setBrandOpinions(req, id);
+      return this.success(res, responseService);
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
+
+  public async removeBrandOpinion(req: Request, res: Response) {
+    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+    //   return this.unauthorized(res);
+    // }
+
+    const id: string = req.params.id;
+
+    try {
+      const responseService = await this.opinionService.deleteBrandOpinion(id);
+      return this.success(res, responseService);
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
+
+  // MODEL ---------------------------------------------------
+  public async returnModelOpinion(req: Request, res: Response) {
     const brand: string = req.params.brand;
     const car: string = req.params.car;
     let myFilter = {};
@@ -30,12 +90,14 @@ export class OpinionController extends ResponseModule {
       }
     }  
 
-    if (brand) { myFilter['brand'] = brand; }
-    if (brand && car) { myFilter['model'] = car; }
-    if (brand || car) { myFilter['active'] = true; }
+    if (brand && car) {
+      myFilter['brand'] = brand;
+      myFilter['model'] = car;
+      myFilter['active'] = true;
+    }
 
     try {
-      const responseService = await this.opinionService.getOpinions(myFilter, false, null, pagination);
+      const responseService = await this.opinionService.getModelOpinions(myFilter, false, null, pagination);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -43,7 +105,7 @@ export class OpinionController extends ResponseModule {
     }
   }
 
-  public async saveOpinion(req: Request, res: Response) {
+  public async saveModelOpinion(req: Request, res: Response) {
     // if (!req.isAuthenticated()) {
     //   return this.unauthorized(res);
     // }
@@ -51,7 +113,7 @@ export class OpinionController extends ResponseModule {
     const id: string = req.params.id;
 
     try {
-      const responseService = await this.opinionService.setOpinions(req, id);
+      const responseService = await this.opinionService.setModelOpinions(req, id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -59,7 +121,7 @@ export class OpinionController extends ResponseModule {
     }
   }
 
-  public async removeOpinion(req: Request, res: Response) {
+  public async removeModelOpinion(req: Request, res: Response) {
     // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
     //   return this.unauthorized(res);
     // }
@@ -67,12 +129,11 @@ export class OpinionController extends ResponseModule {
     const id: string = req.params.id;
 
     try {
-      const responseService = await this.opinionService.deleteOpinion(id);
+      const responseService = await this.opinionService.deleteModelOpinion(id);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.errorHandler(error, res);
     }
   }
-  
 }
