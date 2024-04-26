@@ -335,59 +335,39 @@ export class CarService {
       : Promise.reject({ statusCode: 404 });
   }
 
-  // AVERAGE ---------------------------------------------------
-  public async updateAverage(changedOpinion: Object, operation: 'set' | 'delete', currentData?: any): Promise<void> {
-    // BRAND -------------------------------------------------------------
+  // AVERAGE BRAND ---------------------------------------------------
+  public async updateBrandAverage(changedOpinion: Object, operation: 'set' | 'delete', currentData?: any): Promise<void> {
     const brandId = changedOpinion['brand'];
     const brandAverage = changedOpinion['brand_val_average'];
     let carBrand = await this.getBrands({ _id: brandId });
     let newBrandValLenght: number;
     let newBrandAverage: number;
 
-    // MODEL -------------------------------------------------------------
-    const modelId = changedOpinion['model'];
-    const modelAverage = changedOpinion['car_val_average'];
-    const carModel = await this.getModels({ _id: modelId });
-    let newModelValLength: number;
-    let newModelAverage: number;
-
-    // BRAND AND MODEL -------------------------------------------------------------
     switch (operation) {
       case 'set':
         newBrandValLenght = carBrand[0]['val_length'] + 1;
         newBrandAverage = ((carBrand[0]['average'] * carBrand[0]['val_length']) + brandAverage) / newBrandValLenght;
-
-        newModelValLength = carModel[0]['val_length'] + 1;
-        newModelAverage = ((carModel[0]['average'] * carModel[0]['val_length']) + modelAverage) / newModelValLength;
         break;
       case 'delete':
         newBrandValLenght = carBrand[0]['val_length'] - 1;
         newBrandAverage = ((carBrand[0]['average'] * carBrand[0]['val_length']) - brandAverage) / newBrandValLenght;
-
-        newModelValLength = carModel[0]['val_length'] - 1;
-        newModelAverage = ((carModel[0]['average'] * carModel[0]['val_length']) - modelAverage) / newModelValLength;
         break;
     }
 
     // Se houver inconsistencia na quantidade da média, refaz a média
-    if (currentData && currentData['qtd'] != newModelValLength) {
+    if (currentData && currentData['qtd'] != newBrandValLenght) {
       let brandSum = 0;
-      let modelSum = 0;
 
       currentData.opinions.forEach(
         opinion => {
           brandSum += opinion.brand_val_average;
-          modelSum += opinion.car_val_average;
         }
       );
 
       newBrandAverage = brandSum / currentData['qtd'];
       newBrandValLenght = currentData['qtd'];
-      newModelAverage = modelSum / currentData['qtd'];
-      newModelValLength = currentData['qtd'];
     }
   
-    // BRAND -------------------------------------------------------------
     const updateBrandPayload = {
       name: carBrand[0]['name'],
       image: carBrand[0]['image'],
@@ -404,8 +384,41 @@ export class CarService {
       brandPayload['user'] = {id: userIdBrand};
     }
     this.setBrand(brandPayload, brandId);
+  }
 
-    // MODEL -------------------------------------------------------------
+  // AVERAGE MODEL ---------------------------------------------------
+  public async updateModelAverage(changedOpinion: Object, operation: 'set' | 'delete', currentData?: any): Promise<void> {
+    const modelId = changedOpinion['model'];
+    const modelAverage = changedOpinion['car_val_average'];
+    const carModel = await this.getModels({ _id: modelId });
+    let newModelValLength: number;
+    let newModelAverage: number;
+
+    switch (operation) {
+      case 'set':
+        newModelValLength = carModel[0]['val_length'] + 1;
+        newModelAverage = ((carModel[0]['average'] * carModel[0]['val_length']) + modelAverage) / newModelValLength;
+        break;
+      case 'delete':
+        newModelValLength = carModel[0]['val_length'] - 1;
+        newModelAverage = ((carModel[0]['average'] * carModel[0]['val_length']) - modelAverage) / newModelValLength;
+        break;
+    }
+
+    // Se houver inconsistencia na quantidade da média, refaz a média
+    if (currentData && currentData['qtd'] != newModelValLength) {
+      let modelSum = 0;
+
+      currentData.opinions.forEach(
+        opinion => {
+          modelSum += opinion.car_val_average;
+        }
+      );
+
+      newModelAverage = modelSum / currentData['qtd'];
+      newModelValLength = currentData['qtd'];
+    }
+  
     const updatedModelPayload = {
       name: carModel[0]['name'],
       brand: carModel[0]['brand']['_id'],
