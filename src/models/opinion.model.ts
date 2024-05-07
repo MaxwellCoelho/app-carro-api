@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 
 const opinionCarSchema = new mongoose.Schema({
-    customer: Object,
+    brand: Object,
     model: Object,
     version: Object,
     year_model: String,
@@ -27,7 +27,6 @@ const opinionCarSchema = new mongoose.Schema({
 });
 
 const opinionBrandSchema = new mongoose.Schema({
-    customer: Object,
     brand: Object,
     brand_val_services: Number,
     brand_val_people: Number,
