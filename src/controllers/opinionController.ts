@@ -31,7 +31,7 @@ export class OpinionController extends ResponseModule {
     }  
 
     if (brand) {
-      myFilter['brand'] = brand;
+      myFilter['brand._id'] = brand;
       myFilter['active'] = true;
     }
 
@@ -91,8 +91,8 @@ export class OpinionController extends ResponseModule {
     }  
 
     if (brand && car) {
-      myFilter['brand'] = brand;
-      myFilter['model'] = car;
+      myFilter['brand._id'] = brand;
+      myFilter['model._id'] = car;
       myFilter['active'] = true;
     }
 

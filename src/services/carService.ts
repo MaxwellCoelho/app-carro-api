@@ -1,5 +1,6 @@
 import { config } from '../config/config';
 import { categoryModel, brandModel, modelModel, versionModel } from '../models/car.model';
+import { opinionCarModel } from '../models/opinion.model';
 import { CryptoService, CustomerService } from '../services';
 import { Utils } from '../utils/utils';
 
@@ -23,7 +24,7 @@ export class CarService {
       return Promise.reject({ statusCode: 401 });
     }
   
-    return this.customerService.returnWithCreatedAndModifierUser(res);
+    return Promise.resolve(res);
   }
 
   public async setCategory(req: any, id?: string): Promise<Object> {
@@ -44,12 +45,16 @@ export class CarService {
     if (exists) {
       const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       res['saved'] = await categoryModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
+      // atualiza duplicações na collection de modelos
+      const newCategory = {
+        _id: res['saved']._id,
+        name: res['saved'].name
+      };
+      this.customerService.updateMany(modelModel, ['category'], res['saved'], newCategory);
     } else {
       const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, categoryModel);
       res['saved'] = await createdPost.save();
-    }
-
-    // res['categories'] = await this.getCategories();
+    } 
 
     return Promise.resolve(res);
   }
@@ -66,7 +71,7 @@ export class CarService {
 
   // BRANDS ---------------------------------------------------
   public async getBrands(filter?: any, mySort?: any, myPagination?: any): Promise<Object> {
-    let myFilter = filter ? filter : {};
+    let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
     let sorted = mySort ? mySort : { name: 'asc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
@@ -78,7 +83,7 @@ export class CarService {
       Promise.reject({ statusCode: 404 });
     }
   
-    return this.customerService.returnWithCreatedAndModifierUser(res);
+    return Promise.resolve(res);
   }
 
   public async setBrand(req: any, id?: string): Promise<Object> {
@@ -100,6 +105,15 @@ export class CarService {
       let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       modifiedPost['url'] = this.utils.sanitizeText(modifiedPost.name);
       res['saved'] = await brandModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
+      // atualiza duplicações na collection de modelos
+      const newBrand = {
+        _id: res['saved']._id,
+        name: res['saved'].name,
+        url: res['saved'].url
+      };
+      this.customerService.updateMany(modelModel, ['brand'], res['saved'], newBrand);
+      // atualiza duplicações na collection de opinion cars
+      this.customerService.updateMany(opinionCarModel, ['brand'], res['saved'], newBrand);
     } else {
       let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, brandModel);
       createdPost['url'] = this.utils.sanitizeText(createdPost.name);
@@ -108,7 +122,7 @@ export class CarService {
       res['saved'] = await createdPost.save();
     }
 
-    // res['brands'] = await this.getBrands();
+    
 
     return Promise.resolve(res);
   }
@@ -125,7 +139,7 @@ export class CarService {
 
   // MODELS ---------------------------------------------------
   public async getModels(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
-    let myFilter = filter ? filter : {};
+    let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
     let sorted = mySort ? mySort : { name: 'asc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
@@ -146,8 +160,6 @@ export class CarService {
         resumedObj = {
           _id: item['_id'],
           name: item['name'],
-          image: item['image'],
-          thumb: item['thumb'],
           url: item['url'],
           average: item['average'],
           val_length: item['val_length'],
@@ -156,41 +168,12 @@ export class CarService {
         };
       }
 
-      await this.getBrands({ _id: item.brand }).then(brand => {
-        if (brand[0]) {
-          if (resumed) {
-            resumedObj['brand'] = {
-              _id: brand[0]['_id'],
-              name: brand[0]['name'],
-              image: brand[0]['image'],
-              url: brand[0]['url'],
-              active: brand[0]['active'],
-              review: brand[0]['review']
-            }
-          } else {
-            item.brand = brand[0];
-          }
-        }
-      });
-      
-      if (item.category) {
-        await this.getCategories(item.category).then(category => {
-          if (category[0]) {
-            if (resumed) {
-              resumedObj['category'] = category[0]['name'];
-            } else {
-              item.category = category[0];
-            }
-          }
-        });
-      }
-
       resumedArray.push(resumedObj);
     }
     
     return resumed
       ? Promise.resolve(resumedArray)
-      : this.customerService.returnWithCreatedAndModifierUser(res);
+      : Promise.resolve(res);
   }
 
   public async setModel(req: any, id?: string): Promise<Object> {
@@ -212,6 +195,15 @@ export class CarService {
       let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       modifiedPost['url'] = this.utils.sanitizeText(modifiedPost.name);
       res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
+      // atualiza duplicações na collection de versoes
+      const newModel = {
+        _id: res['saved']._id,
+        name: res['saved'].name,
+        url: res['saved'].url
+      };
+      this.customerService.updateMany(versionModel, ['model'], res['saved'], newModel);
+      // atualiza duplicações na collection de opinioes de carros
+      this.customerService.updateMany(opinionCarModel, ['model'], res['saved'], newModel);
     } else {
       let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, modelModel);
       createdPost['url'] = this.utils.sanitizeText(createdPost.name);
@@ -237,7 +229,7 @@ export class CarService {
 
   // VERSIONS ---------------------------------------------------
   public async getVersion(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
-    let myFilter = filter ? filter : {};
+    let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
     const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
@@ -260,25 +252,12 @@ export class CarService {
         };
       }
 
-      await this.getModels({ _id: item.model }).then(model => {
-        if (model[0]) {
-          if (resumed) {
-            resumedObj['model'] = {
-              _id: model[0]['_id'],
-              name: model[0]['name']
-            }
-          } else {
-            item.model = model[0];
-          }
-        }
-      });
-
       resumedArray.push(resumedObj);
     }
     
     return resumed
       ? Promise.resolve(resumedArray)
-      : this.customerService.returnWithCreatedAndModifierUser(res);
+      : Promise.resolve(res);
   }
 
   public async setVersion(req: any, id?: string): Promise<Object> {
@@ -311,6 +290,18 @@ export class CarService {
       }
       let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       res['saved'] = await versionModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
+      // atualiza duplicações na collection de opinioes de carros
+      const newVersion = {
+        _id: res['saved']._id,
+        engine: res['saved'].engine,
+        fuel: res['saved'].fuel,
+        gearbox: res['saved'].gearbox,
+        years: res['saved'].years,
+        complement: res['saved'].complement,
+        image: res['saved'].image,
+        thumb: res['saved'].thumb
+      };
+      this.customerService.updateMany(opinionCarModel, ['version'], res['saved'], newVersion);
     } else {
       if (choosenYear) {
         req.body.data['years'] = [choosenYear];
@@ -337,7 +328,7 @@ export class CarService {
 
   // AVERAGE BRAND ---------------------------------------------------
   public async updateBrandAverage(changedOpinion: Object, operation: 'set' | 'delete', currentData?: any): Promise<void> {
-    const brandId = changedOpinion['brand'];
+    const brandId = changedOpinion['brand']['_id'];
     const brandAverage = changedOpinion['brand_val_average'];
     let carBrand = await this.getBrands({ _id: brandId });
     let newBrandValLenght: number;
@@ -378,17 +369,17 @@ export class CarService {
     }
 
     const encodedBrand = this.cryptoService.encondeJwt(updateBrandPayload);
-    const userIdBrand = carBrand[0]['modified_by'] ? carBrand[0]['modified_by']['id'].toString() : null;
+    const userIdBrand = carBrand[0]['modified_by'] ? carBrand[0]['modified_by']['_id'].toString() : null;
     const brandPayload = {body: {data: encodedBrand}};
     if (userIdBrand) {
-      brandPayload['user'] = {id: userIdBrand};
+      brandPayload['user'] = {_id: userIdBrand};
     }
     this.setBrand(brandPayload, brandId);
   }
 
   // AVERAGE MODEL ---------------------------------------------------
   public async updateModelAverage(changedOpinion: Object, operation: 'set' | 'delete', currentData?: any): Promise<void> {
-    const modelId = changedOpinion['model'];
+    const modelId = changedOpinion['model']['_id'];
     const modelAverage = changedOpinion['car_val_average'];
     const carModel = await this.getModels({ _id: modelId });
     let newModelValLength: number;
@@ -435,12 +426,11 @@ export class CarService {
     }
 
     const encodedModel = this.cryptoService.encondeJwt(updatedModelPayload);
-    const userIdModel = carModel[0]['modified_by'] ? carModel[0]['modified_by']['id'].toString() : null;
+    const userIdModel = carModel[0]['modified_by'] ? carModel[0]['modified_by']['_id'].toString() : null;
     const modelPayload = {body: {data: encodedModel}};
     if (userIdModel) {
-      modelPayload['user'] = {id: userIdModel};
+      modelPayload['user'] = {_id: userIdModel};
     }
     this.setModel(modelPayload, modelId);
   }
-
 }

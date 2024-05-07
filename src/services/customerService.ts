@@ -1,7 +1,10 @@
 import { config } from '../config/config';
 import { customerModel, roleModel } from '../models/customer.model';
+import { categoryModel, brandModel, modelModel, versionModel } from '../models/car.model';
+import { opinionCarModel, opinionBrandModel } from '../models/opinion.model';
 import { CryptoService } from '../services';
 import { UDate } from '../utils';
+import { Utils } from '../utils/utils';
 
 export class CustomerService {
   public conf = config;
@@ -9,11 +12,12 @@ export class CustomerService {
   constructor(
     private cryptoService: CryptoService,
     private uDate: UDate,
+    private utils: Utils,
   ) { }
 
   // CUSTOMERS ---------------------------------------------------
   public async getCustomers(filter?: any, resumed?: boolean): Promise<any> {
-    let myFilter = filter ? filter : {};
+    let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
     let res;
     
     try {
@@ -31,18 +35,12 @@ export class CustomerService {
           name: item['name']
         };
         resumedArray.push(resumedObj);
-      } else {
-        await this.getRoles({ _id: item.role }).then(role => {
-          if (role[0]) {
-            item.role = role[0];
-          }
-        });
       }
     }
 
     return resumed
       ? Promise.resolve(resumedArray)
-      : this.returnWithCreatedAndModifierUser(res);
+      : Promise.resolve(res);
   }
 
   public async setCustomer(req: any, id?: string): Promise<Object> {
@@ -76,6 +74,17 @@ export class CustomerService {
       }
 
       res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
+      // atualiza duplicações nas outras collections
+      const newCustomer = {
+        _id: res['saved']._id,
+        name: res['saved'].name
+      };
+      const modelsToUpdate = [
+        roleModel, categoryModel, brandModel, modelModel, versionModel, opinionCarModel, opinionBrandModel
+      ];
+      modelsToUpdate.forEach(model => {
+        this.updateMany(model, ['created_by', 'modified_by'], res['saved'], newCustomer);
+      });
     } else {
       const createdPost = this.setCreatedAndModifierUser(req, idExists, customerModel);
       createdPost.password = this.cryptoService.encriptPassword(createdPost.password);
@@ -102,14 +111,14 @@ export class CustomerService {
   
   // ROLES ---------------------------------------------------
   public async getRoles(filter?: any): Promise<Object> {
-    let myFilter = filter ? filter : {};
+    let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
     const res = await roleModel.find(myFilter);
 
     if (!res.length) {
       Promise.reject({ statusCode: 404 });
     }
 
-    return this.returnWithCreatedAndModifierUser(res);
+    return Promise.resolve(res);
   }
 
   public async setRole(req: any, id?: string): Promise<Object> {
@@ -130,6 +139,13 @@ export class CustomerService {
     if (exists) {
       const modifiedPost = this.setCreatedAndModifierUser(req, exists);
       res['saved'] = await roleModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
+      // atualiza duplicações na collection de customers
+      const newRole = {
+        _id: res['saved']._id,
+        name: res['saved'].name,
+        level: res['saved'].level
+      };
+      this.updateMany(customerModel, ['role'], res['saved'], newRole);
     } else {
       const createdPost = this.setCreatedAndModifierUser(req, exists, roleModel);
       res['saved'] = await createdPost.save();
@@ -150,30 +166,6 @@ export class CustomerService {
       : Promise.reject({ statusCode: 404 });
   }
 
-  public async returnWithCreatedAndModifierUser(res) {
-    for (const item of res) {
-      if (item.created_by !== 'itself') {
-        await this.getCustomers({ _id: item.created_by }, true).then(user => {
-          if (user[0]) {
-            item.created_by = user[0];
-          }
-        });
-      }
-
-      if (item.modified_by !== 'itself' && item.modified_by !== item.created_by) {
-        await this.getCustomers({ _id: item.modified_by }, true).then(user => {
-          if (user[0]) {
-            item.modified_by = user[0];
-          }
-        });
-      } else {
-        item.modified_by = item.created_by;
-      }
-    }
-
-    return Promise.resolve(res);
-  }
-
   public setCreatedAndModifierUser(req, exists, model?) {
     const timeStamp = this.uDate.getCurrentDateTimeString();
     let postPayload;
@@ -185,7 +177,7 @@ export class CustomerService {
       };
 
       if (req.user) {
-        postPayload.modified_by = req.user.id;
+        postPayload.modified_by = {_id: req.user._id, name: req.user.name};
       }
     } else {
       postPayload = new model(req.body.data);
@@ -193,11 +185,26 @@ export class CustomerService {
       postPayload.modified = timeStamp;
 
       if (req.user) {
-        postPayload.created_by = req.user.id;
-        postPayload.modified_by = req.user.id;
+        postPayload.created_by = {_id: req.user._id, name: req.user.name};
+        postPayload.modified_by = postPayload.created_by;
       }
     }
 
     return postPayload;
+  }
+
+  public async updateMany(model: any, params: string[], saved: any, newObject: object): Promise<void> {
+    let newParams = [];
+    let newObjects = {};
+
+    params.forEach(param => {
+      newParams.push({ [param]: saved._id.toString() });
+      newParams.push({ [param]: saved._id });
+      newParams.push({ [`${param}._id`]: saved._id.toString() });
+      newParams.push({ [`${param}._id`]: saved._id });
+      newObjects[param] = newObject;
+    });
+
+    await model.updateMany({ $or: newParams }, newObjects);
   }
 }

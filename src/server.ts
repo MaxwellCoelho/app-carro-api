@@ -54,9 +54,9 @@ const cryptoService = new CryptoService();
 const uDate = new UDate();
 const utils = new Utils();
 const testService = new TestService();
-const customerService = new CustomerService(cryptoService, uDate);
+const customerService = new CustomerService(cryptoService, uDate, utils);
 const carService = new CarService(cryptoService, customerService, utils);
-const opinionService = new OpinionService(cryptoService, customerService, carService, uDate);
+const opinionService = new OpinionService(cryptoService, customerService, carService, utils);
 const authService = new AuthService(cryptoService, customerService);
 const bestService = new BestService(carService);
 

@@ -1,7 +1,7 @@
 import { config } from '../config/config';
 import { opinionCarModel, opinionBrandModel } from '../models/opinion.model';
 import { CryptoService, CustomerService, CarService } from '../services';
-import { UDate } from '../utils';
+import { Utils } from '../utils/utils';
 
 export class OpinionService {
   public conf = config;
@@ -30,7 +30,7 @@ export class OpinionService {
     private cryptoService: CryptoService,
     private customerService: CustomerService,
     private carService: CarService,
-    private uDate: UDate,
+    private utils: Utils,
   ) { }
 
   public clearSum() {
@@ -45,7 +45,7 @@ export class OpinionService {
 
   // BRAND ---------------------------------------------------
   public async getBrandOpinions(filter?: any, resumed?: boolean, sorted?: any, myPagination?: any): Promise<any> {
-    let myFilter = filter ? filter : {};
+    let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
     
     let mySort = sorted ? sorted : { _id: 'desc' };
     let res;
@@ -61,19 +61,10 @@ export class OpinionService {
     this.clearSum();
 
     const brandKeys = Object.keys(this.sum.brand);
-    const showBrandAverages = myFilter.brand;
-    const carBrand = showBrandAverages ? await this.carService.getBrands({ _id: myFilter.brand }) : [];
+    const showBrandAverages = myFilter['brand._id'];
     let filteredItems: any[] = [];
     
     for (const item of res) {
-      if (!resumed) {
-        await this.customerService.getCustomers({ _id: item.customer }, true).then(user => {
-          if (user[0]) {
-            item.customer = user[0];
-          }
-        });
-      }
-
       if (!showBrandAverages) {
         await this.carService.getBrands({ _id: item.brand }).then(brand => {
           if (brand[0]) {
@@ -96,7 +87,7 @@ export class OpinionService {
   
     const qtd = res.length;
     const response = {
-      opinions: await this.customerService.returnWithCreatedAndModifierUser(resumed ? filteredItems : res),
+      opinions: resumed ? filteredItems : res,
       qtd: qtd
     }
 
@@ -106,10 +97,10 @@ export class OpinionService {
       }
 
       response['averages'] = this.sum.brand;
-      response['brand'] = carBrand[0];
+      response['brand'] = res[0].brand;
     }
 
-    return response;
+    return Promise.resolve(response);
   }
 
   public async setBrandOpinions(req: any, id?: string): Promise<Object> {
@@ -146,7 +137,7 @@ export class OpinionService {
       operation = 'set';
     }
 
-    const currentOpinions = await this.getBrandOpinions({ brand: res['saved']['brand'] }, true);
+    const currentOpinions = await this.getBrandOpinions({ ['brand._id']: res['saved']['brand']['_id'] }, true);
     this.carService.updateBrandAverage(res['saved'], operation, currentOpinions);
 
     // if (req.user && req.user['role'] && req.user['role'].level < 2) {
@@ -171,7 +162,7 @@ export class OpinionService {
 
   // MODEL ---------------------------------------------------
   public async getModelOpinions(filter?: any, resumed?: boolean, sorted?: any, myPagination?: any): Promise<any> {
-    let myFilter = filter ? filter : {};
+    let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
     let mySort = sorted ? sorted : { _id: 'desc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
@@ -186,27 +177,10 @@ export class OpinionService {
     this.clearSum();
 
     const carKeys = Object.keys(this.sum.car);
-    const showCarAverages = myFilter.brand && myFilter.model;
-    const carModel = showCarAverages ? await this.carService.getModels({ _id: myFilter.model }) : [];
+    const showCarAverages = myFilter['brand._id'] && myFilter['model._id'];
     let filteredItems: any[] = [];
     
     for (const item of res) {
-      if (!resumed) {
-        await this.customerService.getCustomers({ _id: item.customer }, true).then(user => {
-          if (user[0]) {
-            item.customer = user[0];
-          }
-        });
-      }
-
-      if (!showCarAverages) {
-        await this.carService.getModels({ _id: item.model }).then(model => {
-          if (model[0]) {
-            item.model = model[0];
-          }
-        }); 
-      }
-
       if (showCarAverages) {
         for (let i = 0; i < carKeys.length; i++) {
           this.sum.car[carKeys[i]] += item[`car_val_${carKeys[i]}`];
@@ -216,18 +190,12 @@ export class OpinionService {
       if (resumed) {
         const {_id, model, car_val_average, active, created, created_by, modified, modified_by } = item;
         filteredItems.push({_id, model, car_val_average, active, created, created_by, modified, modified_by });
-      } else {
-        await this.carService.getVersion({ _id: item.version }).then(version => {
-          if (version[0]) {
-            item.version = version[0];
-          }
-        }); 
       }
     }
   
     const qtd = res.length;
     const response = {
-      opinions: await this.customerService.returnWithCreatedAndModifierUser(resumed ? filteredItems : res),
+      opinions: resumed ? filteredItems : res,
       qtd: qtd
     }
 
@@ -237,10 +205,10 @@ export class OpinionService {
       }
 
       response['averages'] = this.sum.car;
-      response['model'] = carModel[0];
+      // response['model'] = {...res[0].model, ...res[0].brand};
     }
 
-    return response;
+    return Promise.resolve(response);
   }
 
   public async setModelOpinions(req: any, id?: string): Promise<Object> {
@@ -277,7 +245,7 @@ export class OpinionService {
       operation = 'set';
     }
 
-    const currentOpinions = await this.getModelOpinions({ model: res['saved']['model'] }, true);
+    const currentOpinions = await this.getModelOpinions({ ['model._id']: res['saved']['model']['_id'] }, true);
     this.carService.updateModelAverage(res['saved'], operation, currentOpinions);
 
     // if (req.user && req.user['role'] && req.user['role'].level < 2) {
@@ -331,7 +299,6 @@ export class OpinionService {
     }
 
     const payload = {
-      customer: customerId,
       brand: brand.carBrand,
       brand_title: brand.finalWords.title,
       brand_positive: brand.finalWords.positive,
@@ -383,7 +350,7 @@ export class OpinionService {
     }
 
     const payload = {
-      customer: customerId,
+      brand: car.carBrand,
       model: car.carModel,
       year_model: car.yearModel,
       version: car.carVersion,
