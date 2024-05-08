@@ -13,7 +13,7 @@ const sessionMiddleware = (req: Request, res: Response, next: NextFunction) => {
             mongoUrl: mongoUri
         }),
         cookie: { 
-            maxAge: 30 * 60 * 60 * 60 * 1000
+            maxAge: 2 * 60 * 60 * 60 * 1000
         }
     })(req, res, next);
 }
