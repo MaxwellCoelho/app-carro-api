@@ -64,6 +64,10 @@ export class CustomerService {
       return Promise.reject({ statusCode: 401 });
     }
 
+    if (req.body.data['role']) {
+      req.body.data['role'] = this.utils.convertIdToObjectId(req.body.data['role'])
+    }
+
     let res = {};
 
     if (idExists) {

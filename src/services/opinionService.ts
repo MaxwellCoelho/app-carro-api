@@ -118,6 +118,10 @@ export class OpinionService {
 
     let res = {};
 
+    if (req.body.data['brand']) {
+      req.body.data['brand'] = this.utils.convertIdToObjectId(req.body.data['brand'])
+    }
+
     const dataReq = await this.setBrandDataPayload(req);
     req = dataReq;
     let operation;
@@ -225,6 +229,18 @@ export class OpinionService {
     }
 
     let res = {};
+
+    if (req.body.data['brand']) {
+      req.body.data['brand'] = this.utils.convertIdToObjectId(req.body.data['brand'])
+    }
+
+    if (req.body.data['model']) {
+      req.body.data['model'] = this.utils.convertIdToObjectId(req.body.data['model'])
+    }
+
+    if (req.body.data['version']) {
+      req.body.data['version'] = this.utils.convertIdToObjectId(req.body.data['version'])
+    }
 
     const dataReq = await this.setModelDataPayload(req);
     req = dataReq;

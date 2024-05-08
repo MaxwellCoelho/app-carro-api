@@ -1,6 +1,6 @@
 import { config } from '../config/config';
 import { categoryModel, brandModel, modelModel, versionModel } from '../models/car.model';
-import { opinionCarModel } from '../models/opinion.model';
+import { opinionBrandModel, opinionCarModel } from '../models/opinion.model';
 import { CryptoService, CustomerService } from '../services';
 import { Utils } from '../utils/utils';
 
@@ -48,7 +48,8 @@ export class CarService {
       // atualiza duplicações na collection de modelos
       const newCategory = {
         _id: res['saved']._id,
-        name: res['saved'].name
+        name: res['saved'].name,
+        active: res['saved'].active
       };
       this.customerService.updateMany(modelModel, ['category'], res['saved'], newCategory);
     } else {
@@ -109,11 +110,15 @@ export class CarService {
       const newBrand = {
         _id: res['saved']._id,
         name: res['saved'].name,
-        url: res['saved'].url
+        url: res['saved'].url,
+        active: res['saved'].active,
+        review: res['saved'].review
       };
       this.customerService.updateMany(modelModel, ['brand'], res['saved'], newBrand);
       // atualiza duplicações na collection de opinion cars
       this.customerService.updateMany(opinionCarModel, ['brand'], res['saved'], newBrand);
+      // atualiza duplicações na collection de opinion brand
+      this.customerService.updateMany(opinionBrandModel, ['brand'], res['saved'], newBrand);
     } else {
       let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, brandModel);
       createdPost['url'] = this.utils.sanitizeText(createdPost.name);
@@ -160,6 +165,8 @@ export class CarService {
         resumedObj = {
           _id: item['_id'],
           name: item['name'],
+          brand: item['brand'],
+          category: item['category'],
           url: item['url'],
           average: item['average'],
           val_length: item['val_length'],
@@ -189,6 +196,14 @@ export class CarService {
       return Promise.reject({ statusCode: 401 });
     }
 
+    if (req.body.data['brand']) {
+      req.body.data['brand'] = this.utils.convertIdToObjectId(req.body.data['brand'])
+    }
+
+    if (req.body.data['category']) {
+      req.body.data['category'] = this.utils.convertIdToObjectId(req.body.data['category'])
+    }
+
     let res = {};
 
     if (exists) {
@@ -199,7 +214,9 @@ export class CarService {
       const newModel = {
         _id: res['saved']._id,
         name: res['saved'].name,
-        url: res['saved'].url
+        url: res['saved'].url,
+        active: res['saved'].active,
+        review: res['saved'].review
       };
       this.customerService.updateMany(versionModel, ['model'], res['saved'], newModel);
       // atualiza duplicações na collection de opinioes de carros
@@ -273,6 +290,10 @@ export class CarService {
       return Promise.reject({ statusCode: 401 });
     }
 
+    if (req.body.data['model']) {
+      req.body.data['model'] = this.utils.convertIdToObjectId(req.body.data['model'])
+    }
+
     let res = {};
 
     const choosenYear = parseInt(req.body.data.year);
@@ -299,7 +320,9 @@ export class CarService {
         years: res['saved'].years,
         complement: res['saved'].complement,
         image: res['saved'].image,
-        thumb: res['saved'].thumb
+        thumb: res['saved'].thumb,
+        active: res['saved'].active,
+        review: res['saved'].review
       };
       this.customerService.updateMany(opinionCarModel, ['version'], res['saved'], newVersion);
     } else {
