@@ -28,6 +28,7 @@ const modelSchema = new mongoose.Schema({
     name: String,
     brand: Object,
     category: Object,
+    years: Array,
     average: Number,
     val_length: Number,
     image: String,
