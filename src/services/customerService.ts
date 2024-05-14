@@ -31,7 +31,7 @@ export class CustomerService {
     for (let item of res) {
       if (resumed) {
         const resumedObj = {
-          id: item['_id'],
+          _id: item['_id'],
           name: item['name']
         };
         resumedArray.push(resumedObj);
