@@ -118,12 +118,13 @@ export class OpinionService {
 
     let res = {};
 
+    const dataReq = await this.setBrandDataPayload(req);
+    req = dataReq;
+
     if (req.body.data['brand']) {
       req.body.data['brand'] = this.utils.convertIdToObjectId(req.body.data['brand'])
     }
-
-    const dataReq = await this.setBrandDataPayload(req);
-    req = dataReq;
+    
     let operation;
 
     if (exists) {
@@ -230,6 +231,9 @@ export class OpinionService {
 
     let res = {};
 
+    const dataReq = await this.setModelDataPayload(req);
+    req = dataReq;
+
     if (req.body.data['brand']) {
       req.body.data['brand'] = this.utils.convertIdToObjectId(req.body.data['brand'])
     }
@@ -242,8 +246,6 @@ export class OpinionService {
       req.body.data['version'] = this.utils.convertIdToObjectId(req.body.data['version'])
     }
 
-    const dataReq = await this.setModelDataPayload(req);
-    req = dataReq;
     let operation;
 
     if (exists) {
@@ -287,10 +289,10 @@ export class OpinionService {
   public async setBrandDataPayload(req) {
     const brand = req.body.data.aboutBrand;
     const user = req.body.data.userInfo;
-    let customerId;
+    let customerPayload;
 
     if (req.isAuthenticated()) {
-      customerId = req.user.id;
+      customerPayload = {_id: req.user.id, name: req.user.name};
     } else {
       let foundUser;
 
@@ -301,17 +303,15 @@ export class OpinionService {
       });
 
       if (foundUser) {
-        customerId = foundUser['id'];
+        customerPayload = {_id: foundUser['_id'], name: foundUser['name']};
       } else {
         let newUserPayload = await this.setNewUserPayload(user); 
         const createdUser = await this.customerService.setCustomer(newUserPayload);
 
-        customerId = createdUser['saved']['_id'];
+        customerPayload = {_id: createdUser['saved']['_id'], name: createdUser['saved']['name']};
       }
 
-      req['user'] = {
-        id: customerId
-      }
+      req['user'] = customerPayload;
     }
 
     const payload = {
@@ -338,10 +338,10 @@ export class OpinionService {
   public async setModelDataPayload(req) {
     const car = req.body.data.aboutCar;
     const user = req.body.data.userInfo;
-    let customerId;
+    let customerPayload;
 
     if (req.isAuthenticated()) {
-      customerId = req.user.id;
+      customerPayload = {_id: req.user.id, name: req.user.name};
     } else {
       let foundUser;
 
@@ -352,17 +352,14 @@ export class OpinionService {
       });
 
       if (foundUser) {
-        customerId = foundUser['id'];
+        customerPayload = {_id: foundUser['_id'], name: foundUser['name']};
       } else {
         let newUserPayload = await this.setNewUserPayload(user); 
         const createdUser = await this.customerService.setCustomer(newUserPayload);
-
-        customerId = createdUser['saved']['_id'];
+        customerPayload = {_id: createdUser['saved']['_id'], name: createdUser['saved']['name']};
       }
 
-      req['user'] = {
-        id: customerId
-      }
+      req['user'] = customerPayload;
     }
 
     const payload = {
@@ -395,18 +392,18 @@ export class OpinionService {
   public async setNewUserPayload(user) {
     const randomPassword = this.cryptoService.randomPasswordGenerator();
     // console.log('password gerado: '+randomPassword); senha aleatoria
-    let roleId;
+    let newRole;
     
     await this.customerService.getRoles({ level: 3 }).then(role => {
       if (role[0]) {
-        roleId = role[0]['_id'];
+        newRole = {_id: role[0]['_id'], name: role[0]['name'], level: role[0]['level']};
       }
     });
 
     const data = {
       name: user.name,
       email: user.email,
-      role: roleId,
+      role: newRole,
       password: randomPassword,
       active: true
     };
