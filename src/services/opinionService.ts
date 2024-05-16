@@ -182,7 +182,7 @@ export class OpinionService {
     this.clearSum();
 
     const carKeys = Object.keys(this.sum.car);
-    const showCarAverages = myFilter['brand._id'] && myFilter['model._id'];
+    const showCarAverages = myFilter['model.brand._id'] && myFilter['model._id'];
     let filteredItems: any[] = [];
     
     for (const item of res) {
@@ -234,16 +234,16 @@ export class OpinionService {
     const dataReq = await this.setModelDataPayload(req);
     req = dataReq;
 
-    if (req.body.data['brand']) {
-      req.body.data['brand'] = this.utils.convertIdToObjectId(req.body.data['brand'])
-    }
-
     if (req.body.data['model']) {
-      req.body.data['model'] = this.utils.convertIdToObjectId(req.body.data['model'])
+      req.body.data['model'] = this.utils.convertIdToObjectId(req.body.data['model']);
+
+      if (req.body.data['model']['brand']) {
+        req.body.data['model']['brand'] = this.utils.convertIdToObjectId(req.body.data['model']['brand']);
+      }
     }
 
     if (req.body.data['version']) {
-      req.body.data['version'] = this.utils.convertIdToObjectId(req.body.data['version'])
+      req.body.data['version'] = this.utils.convertIdToObjectId(req.body.data['version']);
     }
 
     let operation;
@@ -363,8 +363,7 @@ export class OpinionService {
     }
 
     const payload = {
-      brand: car.carBrand,
-      model: car.carModel,
+      model: { ...car.carModel, brand: car.carBrand },
       year_model: car.yearModel,
       version: car.carVersion,
       year_bought: car.yearBought,

@@ -1,7 +1,6 @@
 import * as mongoose from 'mongoose';
 
 const opinionCarSchema = new mongoose.Schema({
-    brand: Object,
     model: Object,
     version: Object,
     year_model: String,

@@ -215,6 +215,7 @@ export class CarService {
         _id: res['saved']._id,
         name: res['saved'].name,
         url: res['saved'].url,
+        brand: res['saved'].brand,
         active: res['saved'].active,
         review: res['saved'].review
       };
