@@ -9,23 +9,23 @@ export class OpinionRoutes {
     public route(app) {
 
         // BRAND ---------------------------------------------------
-        app.get(['/opinion/brand', '/opinion/brand/:brand'], 
+        app.get(['/api/opinion/brand', '/api/opinion/brand/:brand'], 
             async (req: Request, res: Response) => this.opinionController.returnBrandOpinion(req, res));
 
-        app.post(['/opinion/brand', '/opinion/brand/:id'],
+        app.post(['/api/opinion/brand', '/api/opinion/brand/:id'],
             async (req: Request, res: Response) => this.opinionController.saveBrandOpinion(req, res));
 
-        app.delete('/opinion/brand/:id', 
+        app.delete('/api/opinion/brand/:id', 
             async (req: Request, res: Response) => this.opinionController.removeBrandOpinion(req, res));
         
         // MODEL ---------------------------------------------------
-        app.get(['/opinion/model', '/opinion/model/:brand/:car'], 
+        app.get(['/api/opinion/model', '/api/opinion/model/:brand/:car'], 
             async (req: Request, res: Response) => this.opinionController.returnModelOpinion(req, res));
 
-        app.post(['/opinion/model', '/opinion/model/:id'],
+        app.post(['/api/opinion/model', '/api/opinion/model/:id'],
             async (req: Request, res: Response) => this.opinionController.saveModelOpinion(req, res));
 
-        app.delete('/opinion/model/:id', 
+        app.delete('/api/opinion/model/:id', 
             async (req: Request, res: Response) => this.opinionController.removeModelOpinion(req, res));
     }
 }

@@ -7,7 +7,7 @@ export class TestRoutes {
     constructor(private testController: TestController) {}
 
     public route(app) {
-        app.get('/test', 
+        app.get('/api/test', 
             async (req: Request, res: Response) => this.testController.createTest(req, res));
     }
 }
