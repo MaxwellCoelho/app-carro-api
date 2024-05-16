@@ -7,13 +7,13 @@ export class AuthRoutes {
 
     public route(app) {
             
-        app.post(['/login'],
+        app.post(['/api/login'],
             async (req: Request, res: Response, next: NextFunction) => this.authController.authUser(req, res, next));
 
-        app.post(['/logout'],
+        app.post(['/api/logout'],
             async (req: Request, res: Response, next: NextFunction) => this.authController.logoutUser(req, res, next));
             
-        app.post(['/me'],
+        app.post(['/api/me'],
             async (req: Request, res: Response, next: NextFunction) => this.authController.meUser(req, res, next));
 
     }

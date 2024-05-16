@@ -8,49 +8,49 @@ export class CarRoutes {
 
     public route(app) {
         // CATEGORIES ---------------------------------------------------
-        app.get(['/cars/categories', '/cars/categories/:id'], 
+        app.get(['/api/cars/categories', '/api/cars/categories/:id'], 
             async (req: Request, res: Response) => this.carController.returnCategory(req, res));
 
-        app.post(['/cars/categories', '/cars/categories/:id'],
+        app.post(['/api/cars/categories', '/api/cars/categories/:id'],
             async (req: Request, res: Response) => this.carController.saveCategory(req, res));
 
-        app.delete('/cars/categories/:id', 
+        app.delete('/api/cars/categories/:id', 
             async (req: Request, res: Response) => this.carController.removeCategory(req, res));
 
         // BRANDS ---------------------------------------------------
-        app.get(['/cars/brands', '/cars/brands/:id'], 
+        app.get(['/api/cars/brands', '/api/cars/brands/:id'], 
             async (req: Request, res: Response) => this.carController.returnBrand(req, res));
 
-        app.post(['/cars/brands', '/cars/brands/:id'], 
+        app.post(['/api/cars/brands', '/api/cars/brands/:id'], 
             async (req: Request, res: Response) => this.carController.saveBrand(req, res));
         
-        app.delete('/cars/brands/:id', 
+        app.delete('/api/cars/brands/:id', 
             async (req: Request, res: Response) => this.carController.removeBrand(req, res));
         
         // MODELS ---------------------------------------------------
-        app.get(['/cars/models', '/cars/models/:id'], 
+        app.get(['/api/cars/models', '/api/cars/models/:id'], 
             async (req: Request, res: Response) => this.carController.returnModel(req, res));
 
-        app.post('/cars/models/filter', 
+        app.post('/api/cars/models/filter', 
             async (req: Request, res: Response) => this.carController.returnFilteredModel(req, res));
 
-        app.post(['/cars/models', '/cars/models/:id'], 
+        app.post(['/api/cars/models', '/api/cars/models/:id'], 
             async (req: Request, res: Response) => this.carController.saveModel(req, res));
 
-        app.delete('/cars/models/:id', 
+        app.delete('/api/cars/models/:id', 
             async (req: Request, res: Response) => this.carController.removeModel(req, res));
 
         // VERSIONS ---------------------------------------------------
-        app.get(['/cars/versions', '/cars/versions/:id'], 
+        app.get(['/api/cars/versions', '/api/cars/versions/:id'], 
         async (req: Request, res: Response) => this.carController.returnVersion(req, res));
 
-        app.post('/cars/versions/filter', 
+        app.post('/api/cars/versions/filter', 
             async (req: Request, res: Response) => this.carController.returnFilteredVersion(req, res));
 
-        app.post(['/cars/versions', '/cars/versions/:id'], 
+        app.post(['/api/cars/versions', '/api/cars/versions/:id'], 
             async (req: Request, res: Response) => this.carController.saveVersion(req, res));
 
-        app.delete('/cars/versions/:id', 
+        app.delete('/api/cars/versions/:id', 
             async (req: Request, res: Response) => this.carController.removeVersion(req, res));
     }
 }
