@@ -43,7 +43,7 @@ export class AuthController extends ResponseModule {
       req.login(authorized, (err) => {
         if (err) { throw err; }
         
-        return this.success(res, { authorized: authorized });
+        return this.success(res, { authorized: this.authService.resumedAuthorized(authorized) });
       })
     })(req, res, next)
   }
@@ -63,7 +63,7 @@ export class AuthController extends ResponseModule {
 
   public async meUser(req: Request, res: Response, next: NextFunction) {
     if (req.isAuthenticated()) {
-      return this.success(res, { authorized: req.user });
+      return this.success(res, { authorized: this.authService.resumedAuthorized(req.user) });
     } else {
       return this.unauthorized(res);
     }

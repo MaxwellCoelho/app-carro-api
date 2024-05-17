@@ -115,8 +115,10 @@ export class CarService {
         review: res['saved'].review
       };
       this.customerService.updateMany(modelModel, ['brand'], res['saved'], newBrand);
+      // atualiza duplicações na collection de version cars
+      this.customerService.updateMany(versionModel, ['model.brand'], res['saved'], newBrand);
       // atualiza duplicações na collection de opinion cars
-      this.customerService.updateMany(opinionCarModel, ['brand'], res['saved'], newBrand);
+      this.customerService.updateMany(opinionCarModel, ['model.brand'], res['saved'], newBrand);
       // atualiza duplicações na collection de opinion brand
       this.customerService.updateMany(opinionBrandModel, ['brand'], res['saved'], newBrand);
     } else {

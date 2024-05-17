@@ -1,3 +1,4 @@
+import { Response } from 'express';
 import { config } from '../config/config';
 import { CryptoService, CustomerService } from '../services';
 
@@ -23,9 +24,23 @@ export class AuthService {
 
     const authenticated = this.cryptoService.checkPassword(authData.password, res[0].password);
     if (authenticated) {
-      authorized = res[0];
+      authorized = this.resumedAuthorized(res[0]);
     }
 
     return Promise.resolve(authorized);
+  }
+
+  public resumedAuthorized(res: any): any {
+    return {
+      _id: res['_id'],
+      name: res['name'],
+      email: res['email'],
+      active: res['active'],
+      role: {
+        _id: res['role']['_id'],
+        name: res['role']['name'],
+        level: res['role']['level'],
+      }
+    };
   }
 }
