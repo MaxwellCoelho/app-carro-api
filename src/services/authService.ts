@@ -24,23 +24,10 @@ export class AuthService {
 
     const authenticated = this.cryptoService.checkPassword(authData.password, res[0].password);
     if (authenticated) {
-      authorized = this.resumedAuthorized(res[0]);
+      delete res[0]._doc.password;
+      authorized = res[0];
     }
 
     return Promise.resolve(authorized);
-  }
-
-  public resumedAuthorized(res: any): any {
-    return {
-      _id: res['_id'],
-      name: res['name'],
-      email: res['email'],
-      active: res['active'],
-      role: {
-        _id: res['role']['_id'],
-        name: res['role']['name'],
-        level: res['role']['level'],
-      }
-    };
   }
 }
