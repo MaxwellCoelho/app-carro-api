@@ -12,6 +12,9 @@ export class OpinionRoutes {
         app.get(['/api/opinion/brand', '/api/opinion/brand/:brand'], 
             async (req: Request, res: Response) => this.opinionController.returnBrandOpinion(req, res));
 
+        app.post('/api/opinion/brand/filter', 
+            async (req: Request, res: Response) => this.opinionController.returnFilteredBrandOpinion(req, res));
+
         app.post(['/api/opinion/brand', '/api/opinion/brand/:id'],
             async (req: Request, res: Response) => this.opinionController.saveBrandOpinion(req, res));
 
@@ -21,6 +24,9 @@ export class OpinionRoutes {
         // MODEL ---------------------------------------------------
         app.get(['/api/opinion/model', '/api/opinion/model/:brand/:car'], 
             async (req: Request, res: Response) => this.opinionController.returnModelOpinion(req, res));
+
+        app.post('/api/opinion/model/filter', 
+            async (req: Request, res: Response) => this.opinionController.returnFilteredModelOpinion(req, res));
 
         app.post(['/api/opinion/model', '/api/opinion/model/:id'],
             async (req: Request, res: Response) => this.opinionController.saveModelOpinion(req, res));
