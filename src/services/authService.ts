@@ -24,7 +24,6 @@ export class AuthService {
 
     const authenticated = this.cryptoService.checkPassword(authData.password, res[0].password);
     if (authenticated) {
-      delete res[0]._doc.password;
       authorized = res[0];
     }
 

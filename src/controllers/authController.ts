@@ -42,7 +42,6 @@ export class AuthController extends ResponseModule {
     passport.authenticate('local', () => {
       req.login(authorized, (err) => {
         if (err) { throw err; }
-        delete authorized.password;
         return this.success(res, { authorized: authorized });
       })
     })(req, res, next)
@@ -63,7 +62,6 @@ export class AuthController extends ResponseModule {
 
   public async meUser(req: Request, res: Response, next: NextFunction) {
     if (req.isAuthenticated()) {
-      delete req.user['_doc']['password'];
       return this.success(res, { authorized: req.user });
     } else {
       return this.unauthorized(res);
