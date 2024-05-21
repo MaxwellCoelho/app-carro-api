@@ -44,6 +44,24 @@ export class OpinionController extends ResponseModule {
     }
   }
 
+  public async returnFilteredBrandOpinion(req: Request, res: Response) { 
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    let myFilter = req.body.data;
+
+    try {
+      const responseService = await this.opinionService.getBrandOpinions(myFilter);
+      return this.success(res, { models: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
+
   public async saveBrandOpinion(req: Request, res: Response) {
     // if (!req.isAuthenticated()) {
     //   return this.unauthorized(res);
@@ -99,6 +117,25 @@ export class OpinionController extends ResponseModule {
     try {
       const responseService = await this.opinionService.getModelOpinions(myFilter, false, null, pagination);
       return this.success(res, responseService);
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
+
+  public async returnFilteredModelOpinion(req: Request, res: Response) { 
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    let myFilter = req.body.data;
+    let mySort = { year_bought: 'desc', kept_period: 'desc' };
+
+    try {
+      const responseService = await this.opinionService.getModelOpinions(myFilter, false, mySort);
+      return this.success(res, { models: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.errorHandler(error, res);
