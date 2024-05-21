@@ -131,9 +131,10 @@ export class OpinionController extends ResponseModule {
     }
 
     let myFilter = req.body.data;
+    let mySort = { year_bought: 'desc', kept_period: 'desc' };
 
     try {
-      const responseService = await this.opinionService.getModelOpinions(myFilter);
+      const responseService = await this.opinionService.getModelOpinions(myFilter, false, mySort);
       return this.success(res, { models: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);

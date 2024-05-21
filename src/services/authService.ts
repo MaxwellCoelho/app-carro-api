@@ -36,6 +36,7 @@ export class AuthService {
       name: res['name'],
       email: res['email'],
       active: res['active'],
+      created: res['created'],
       role: {
         _id: res['role']['_id'],
         name: res['role']['name'],
