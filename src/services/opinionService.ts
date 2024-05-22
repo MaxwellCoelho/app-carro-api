@@ -130,11 +130,21 @@ export class OpinionService {
     if (exists) {
       const currentStatus = exists.opinions[0]['active'];
       const newStatus = req.body.data['active'];
+      const currentBrand = exists.opinions[0]['brand']['_id'];
+      const newBrand = req.body.data['brand']['_id'];
       const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       res['saved'] = await opinionBrandModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
 
       if (newStatus !== currentStatus) {
         operation = currentStatus === false ? 'set' : 'delete';
+      }
+
+      if (newBrand !== currentBrand) {
+        const opinionChanged = {
+          brand: { _id: currentBrand },
+          brand_val_average: res['saved']['brand_val_average']
+        }
+        this.carService.updateBrandAverage(opinionChanged, 'delete');
       }
     } else {
       const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, opinionBrandModel);
@@ -251,11 +261,21 @@ export class OpinionService {
     if (exists) {
       const currentStatus = exists.opinions[0]['active'];
       const newStatus = req.body.data['active'];
+      const currentModel = exists.opinions[0]['model']['_id'];
+      const newModel = req.body.data['model']['_id'];
       const modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
       res['saved'] = await opinionCarModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
 
       if (newStatus !== currentStatus) {
         operation = currentStatus === false ? 'set' : 'delete';
+      }
+
+      if (newModel !== currentModel) {
+        const opinionChanged = {
+          model: { _id: currentModel },
+          car_val_average: res['saved']['car_val_average']
+        }
+        this.carService.updateModelAverage(opinionChanged, 'delete');
       }
     } else {
       const createdPost = this.customerService.setCreatedAndModifierUser(req, exists, opinionCarModel);
