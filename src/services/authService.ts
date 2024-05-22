@@ -22,7 +22,7 @@ export class AuthService {
 
     let authorized;
 
-    const authenticated = this.cryptoService.checkPassword(authData.password, res[0].password);
+    const authenticated = res.length ? this.cryptoService.checkPassword(authData.password, res[0].password) : false;
     if (authenticated) {
       authorized = this.resumedAuthorized(res[0]);
     }
@@ -35,6 +35,7 @@ export class AuthService {
       _id: res['_id'],
       name: res['name'],
       email: res['email'],
+      favorites: res['favorites'],
       active: res['active'],
       created: res['created'],
       role: {
