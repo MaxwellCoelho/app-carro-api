@@ -16,10 +16,11 @@ export class CarService {
   // CATEGORIES ---------------------------------------------------
   public async getCategories(id?: string): Promise<Object> {
     let filter = id ? { _id: id } : {};
+    let mySort = { name: 'asc' };
     let res;
 
     try {
-      res = await categoryModel.find(filter);
+      res = await categoryModel.find(filter).sort(mySort);
     } catch (error) {
       return Promise.reject({ statusCode: 401 });
     }
@@ -147,7 +148,7 @@ export class CarService {
   // MODELS ---------------------------------------------------
   public async getModels(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
-    let sorted = mySort ? mySort : { name: 'asc' };
+    let sorted = mySort ? mySort : { 'brand.name': 'asc', name: 'asc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
     const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
@@ -248,15 +249,15 @@ export class CarService {
   }
 
   // VERSIONS ---------------------------------------------------
-  public async getVersion(filter?: any, resumed?: boolean, sort?: any, myPagination?: any): Promise<any> {
+  public async getVersion(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
-    let mySort = sort ? sort : { 'model.brand.name': 'asc', 'model.name': 'asc', 'engine': 'asc', 'complement': 'asc' };
+    let sorted = mySort ? mySort : { 'model.brand.name': 'asc', 'model.name': 'asc', 'engine': 'asc', 'complement': 'asc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
     const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
 
     try {
-      res = await versionModel.find(myFilter).sort(mySort).skip(offset).limit(pageSize);
+      res = await versionModel.find(myFilter).sort(sorted).skip(offset).limit(pageSize);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }

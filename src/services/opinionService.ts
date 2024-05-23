@@ -47,7 +47,7 @@ export class OpinionService {
   public async getBrandOpinions(filter?: any, resumed?: boolean, sorted?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
     
-    let mySort = sorted ? sorted : { _id: 'desc' };
+    let mySort = sorted ? sorted : { 'brand.name': 'asc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
     const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
@@ -178,7 +178,7 @@ export class OpinionService {
   // MODEL ---------------------------------------------------
   public async getModelOpinions(filter?: any, resumed?: boolean, sorted?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
-    let mySort = sorted ? sorted : { _id: 'desc' };
+    let mySort = sorted ? sorted : { 'model.brand.name': 'asc', 'model.name': 'asc', 'version.engine': 'asc', 'version.complement': 'asc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
     const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;

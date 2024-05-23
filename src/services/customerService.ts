@@ -18,10 +18,11 @@ export class CustomerService {
   // CUSTOMERS ---------------------------------------------------
   public async getCustomers(filter?: any, resumed?: boolean): Promise<any> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
+    let mySort = { 'role.level': 'asc', name: 'asc' }
     let res;
     
     try {
-      res = await customerModel.find(myFilter);
+      res = await customerModel.find(myFilter).sort(mySort);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
@@ -119,9 +120,12 @@ export class CustomerService {
   // ROLES ---------------------------------------------------
   public async getRoles(filter?: any): Promise<Object> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
-    const res = await roleModel.find(myFilter);
+    let mySort = { level: 'asc' }
+    let res;
 
-    if (!res.length) {
+    try {
+      res = await roleModel.find(myFilter).sort(mySort);
+    } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
 
