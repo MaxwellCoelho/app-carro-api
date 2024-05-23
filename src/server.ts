@@ -1,6 +1,6 @@
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
-import * as path from 'path';
+// import * as path from 'path';
 import * as mongoose from 'mongoose';
 import "dotenv/config";
 
@@ -17,7 +17,8 @@ import {
     CarRoutes,
     OpinionRoutes,
     AuthRoutes,
-    BestRoutes
+    BestRoutes,
+    FeedbackRoutes
 } from './routes';
 
 // Services
@@ -28,7 +29,8 @@ import {
     CryptoService,
     OpinionService,
     AuthService,
-    BestService
+    BestService,
+    FeedbackService
 } from './services';
 
 // Controllers
@@ -38,7 +40,8 @@ import {
     CarController,
     OpinionController,
     AuthController,
-    BestController
+    BestController,
+    FeedbackController
 } from './controllers';
 
 // Conexão com base de dados
@@ -59,6 +62,7 @@ const carService = new CarService(cryptoService, customerService, utils);
 const opinionService = new OpinionService(cryptoService, customerService, carService, utils);
 const authService = new AuthService(cryptoService, customerService);
 const bestService = new BestService(carService);
+const feedbackService = new FeedbackService(cryptoService, utils, customerService);
 
 // Instancia dos componentes injetáveis
 const testController = new TestController(testService, uDate);
@@ -67,6 +71,7 @@ const carController = new CarController(carService, cryptoService, uDate);
 const opinionController = new OpinionController(opinionService, cryptoService, uDate);
 const authController = new AuthController(authService, cryptoService, uDate);
 const bestController = new BestController(bestService, uDate);
+const feedbackController = new FeedbackController(feedbackService, uDate);
 
 // INSTANCIA DAS ROTAS
 const testRoute = new TestRoutes(testController);
@@ -75,6 +80,7 @@ const carRoute = new CarRoutes(carController);
 const opinionRoute = new OpinionRoutes(opinionController);
 const authRoute = new AuthRoutes(authController);
 const bestRoute = new BestRoutes(bestController);
+const feedbackRoute = new FeedbackRoutes(feedbackController);
 
 const server = express();
 
@@ -110,6 +116,7 @@ carRoute.route(server);
 opinionRoute.route(server);
 authRoute.route(server);
 bestRoute.route(server);
+feedbackRoute.route(server);
 
 // Rodar frontend buildado do projeto app-carro
 // server.use(express.static('www'));

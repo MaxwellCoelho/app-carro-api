@@ -5,3 +5,4 @@ export { CryptoService } from './cryptoService';
 export { OpinionService } from './opinionService';
 export { AuthService } from './authService';
 export { BestService } from './bestService';
+export { FeedbackService } from './feedbackService';
