@@ -6,6 +6,7 @@ const customersSchema = new mongoose.Schema({
     email: String,
     password: String,
     active: Boolean,
+    favorites: Array,
     created_by: Object,
     created: String,
     modified_by: Object,

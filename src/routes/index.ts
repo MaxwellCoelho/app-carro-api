@@ -4,3 +4,4 @@ export * from './authRoute';
 export * from './opinionRoute';
 export * from './testRoute';
 export * from './bestRoute';
+export * from './feedbackRoute';

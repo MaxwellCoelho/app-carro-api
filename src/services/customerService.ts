@@ -18,10 +18,11 @@ export class CustomerService {
   // CUSTOMERS ---------------------------------------------------
   public async getCustomers(filter?: any, resumed?: boolean): Promise<any> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
+    let mySort = { 'role.level': 'asc', name: 'asc' }
     let res;
     
     try {
-      res = await customerModel.find(myFilter);
+      res = await customerModel.find(myFilter).sort(mySort);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
@@ -73,22 +74,25 @@ export class CustomerService {
     if (idExists) {
       const modifiedPost = this.setCreatedAndModifierUser(req, idExists);
 
-      if (modifiedPost['password'] !== idExists[0].password) {
+      if (modifiedPost['password'] && modifiedPost['password'] !== idExists[0].password) {
         modifiedPost['password'] = this.cryptoService.encriptPassword(modifiedPost['password']);
       }
 
       res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
-      // atualiza duplicações nas outras collections
-      const newCustomer = {
-        _id: res['saved']._id,
-        name: res['saved'].name
-      };
-      const modelsToUpdate = [
-        roleModel, categoryModel, brandModel, modelModel, versionModel, opinionCarModel, opinionBrandModel
-      ];
-      modelsToUpdate.forEach(model => {
-        this.updateMany(model, ['created_by', 'modified_by'], res['saved'], newCustomer);
-      });
+      // se nao for atualização de favoritos atualiza duplicações nas outras collections
+      if (!req.body.data['favorites']) {
+        console.log('entrou pra atualizar tudo');
+        const newCustomer = {
+          _id: res['saved']._id,
+          name: res['saved'].name
+        };
+        const modelsToUpdate = [
+          roleModel, categoryModel, brandModel, modelModel, versionModel, opinionCarModel, opinionBrandModel
+        ];
+        modelsToUpdate.forEach(model => {
+          this.updateMany(model, ['created_by', 'modified_by'], res['saved'], newCustomer);
+        });
+      }
     } else {
       const createdPost = this.setCreatedAndModifierUser(req, idExists, customerModel);
       createdPost.password = this.cryptoService.encriptPassword(createdPost.password);
@@ -116,9 +120,12 @@ export class CustomerService {
   // ROLES ---------------------------------------------------
   public async getRoles(filter?: any): Promise<Object> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
-    const res = await roleModel.find(myFilter);
+    let mySort = { level: 'asc' }
+    let res;
 
-    if (!res.length) {
+    try {
+      res = await roleModel.find(myFilter).sort(mySort);
+    } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
 
