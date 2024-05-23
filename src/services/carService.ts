@@ -248,8 +248,9 @@ export class CarService {
   }
 
   // VERSIONS ---------------------------------------------------
-  public async getVersion(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
+  public async getVersion(filter?: any, resumed?: boolean, sort?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
+    let mySort = sort ? sort : { 'model.brand.name': 'asc', 'model.name': 'asc', 'engine': 'asc', 'complement': 'asc' };
     let res;
     const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
     const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
