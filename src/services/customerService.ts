@@ -74,14 +74,18 @@ export class CustomerService {
     if (idExists) {
       const modifiedPost = this.setCreatedAndModifierUser(req, idExists);
 
-      if (modifiedPost['password'] && modifiedPost['password'] !== idExists[0].password) {
-        modifiedPost['password'] = this.cryptoService.encriptPassword(modifiedPost['password']);
+      if (modifiedPost['password'] && modifiedPost['currentPassword']) {
+        if (this.cryptoService.checkPassword(modifiedPost['currentPassword'], idExists[0].password)) {
+          modifiedPost['password'] = this.cryptoService.encriptPassword(modifiedPost['password']);
+        } else {
+          console.log('Senha inválida');
+          return Promise.reject({ statusCode: 401 });
+        }
       }
 
       res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
       // se nao for atualização de favoritos atualiza duplicações nas outras collections
       if (!req.body.data['favorites']) {
-        console.log('entrou pra atualizar tudo');
         const newCustomer = {
           _id: res['saved']._id,
           name: res['saved'].name
