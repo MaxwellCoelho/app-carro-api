@@ -5,6 +5,8 @@ const customersSchema = new mongoose.Schema({
     role: Object,
     email: String,
     password: String,
+    password_reset_token: String,
+    password_reset_expires: Date,
     active: Boolean,
     favorites: Array,
     created_by: Object,

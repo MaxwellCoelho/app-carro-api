@@ -48,7 +48,7 @@ export class AuthController extends ResponseModule {
     })(req, res, next)
   }
 
-  public async logoutUser(req: Request, res: Response, next: NextFunction) {
+  public async logoutUser(req: Request, res: Response) {
     req.logOut((err) => {
       if (err) { throw err; }
         
@@ -61,7 +61,7 @@ export class AuthController extends ResponseModule {
    
   }
 
-  public async meUser(req: Request, res: Response, next: NextFunction) {
+  public async meUser(req: Request, res: Response) {
     if (req.isAuthenticated()) {
       return this.success(res, { authorized: this.authService.resumedAuthorized(req.user) });
     } else {
@@ -69,4 +69,37 @@ export class AuthController extends ResponseModule {
     }
   }
   
+  public async forgotPassword(req: Request, res: Response) {
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    const userMail = req.body.data['email'];
+
+    try {
+      const responseService = await this.authService.forgotPassword(userMail);
+      return this.success(res, { recovery_token: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
+
+  public async resetPassword(req: Request, res: Response) {
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    try {
+      const responseService = await this.authService.resetPassword(req.body.data);
+      return this.success(res, { recovery_token: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
 }
