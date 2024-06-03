@@ -1,13 +1,15 @@
-import { Response } from 'express';
+import * as crypto from 'crypto'; 
 import { config } from '../config/config';
 import { CryptoService, CustomerService } from '../services';
+import { customerModel } from '../models/customer.model';
+import Mail from '../architecture/mailerModule';
 
 export class AuthService {
   public conf = config;
 
   constructor(
     private cryptoService: CryptoService,
-    private customerService: CustomerService,
+    private customerService: CustomerService
   ) { }
 
   public async authUser(authData: any) {
@@ -44,5 +46,83 @@ export class AuthService {
         level: res['role']['level'],
       }
     };
+  }
+
+  public async forgotPassword(email: string) {
+    const filter = { email: email };
+    let res;
+
+    try {
+      res = await this.customerService.getCustomers(filter);
+    } catch (err) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    if (!res.length) {
+      return Promise.reject({ statusCode: 404 });
+    }
+
+    try {
+      const token = crypto.randomBytes(20).toString('hex');
+      const now = new Date();
+      now.setHours(now.getHours() + 1);
+      const modifiedPost = {
+        password_reset_token: token,
+        password_reset_expires: now
+      }
+
+      await customerModel.findByIdAndUpdate({ _id: res[0]._id }, modifiedPost, { new: true });
+
+      Mail.to = email;
+      Mail.subject = 'Solicitação de recuperação de senha';
+      Mail.message = `
+        <p>Recebemos uma solicitação de recuperação de senha para o seu email.</p>
+        <p>Clique no link abaixo para redefinir sua senha. Caso você não tenha solicitado, basta ignorar esse email.</p>
+        <br>
+        <p><a href="https://krro.com.br/recuperar-senha?token=${token}" target="_blank"></a>https://krro.com.br/recuperar-senha?token=${token}</p>
+        <br>
+        <p>Este email foi gerado automaticamente, favor não responder.</p>
+      `;
+
+      let result = Mail.sendMail();
+
+      Promise.resolve(result);
+    } catch (err) {
+      return Promise.reject({ statusCode: 400 });
+    }
+  }
+
+  public async resetPassword(data: any) {
+    const filter = { password_reset_token: data['token'] };
+    let res;
+
+    try {
+      res = await this.customerService.getCustomers(filter);
+    } catch (err) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    if (!res.length) {
+      return Promise.reject({ statusCode: 404 });
+    }
+
+    const now = new Date();
+    if (now > res['password_reset_expires']) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    try {
+      const modifiedPost = {
+        password: this.cryptoService.encriptPassword(data['password']),
+        password_reset_token: null,
+        password_reset_expires: null
+      }
+
+      await customerModel.findByIdAndUpdate({ _id: res[0]._id }, modifiedPost, { new: true });
+
+      Promise.resolve();
+    } catch (err) {
+      return Promise.reject({ statusCode: 400 });
+    }
   }
 }

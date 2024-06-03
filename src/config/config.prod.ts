@@ -1,3 +1,3 @@
-export const environment = {
+export const config = {
   production: true,
 };
