@@ -409,7 +409,7 @@ export class OpinionService {
   }
 
   public async setNewUserPayload(user) {
-    const randomPassword = this.cryptoService.randomPasswordGenerator();
+    // const randomPassword = this.cryptoService.randomPasswordGenerator();
     // console.log('password gerado: '+randomPassword); senha aleatoria
     let newRole;
     
@@ -423,7 +423,7 @@ export class OpinionService {
       name: user.name,
       email: user.email,
       role: newRole,
-      password: randomPassword,
+      password: user.password,
       active: true
     };
 

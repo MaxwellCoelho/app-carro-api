@@ -19,7 +19,7 @@ class Mail {
         });
 
         transport.sendMail({
-            from: "contato@krro.com.br",
+            from: "Krro.com.br contato@krro.com.br",
             to: this.to,
             subject: this.subject,
             html: this.message

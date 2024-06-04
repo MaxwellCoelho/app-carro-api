@@ -76,11 +76,11 @@ export class AuthService {
       Mail.to = email;
       Mail.subject = 'Solicitação de recuperação de senha';
       Mail.message = `
+        <img src="https://krro.com.br/assets/krro.png" alt="Krro.com.br"  width="100">
+        <hr>
         <p>Recebemos uma solicitação de recuperação de senha para o seu email.</p>
         <p>Clique no link abaixo para redefinir sua senha. Caso você não tenha solicitado, basta ignorar esse email.</p>
-        <br>
         <p><a href="https://krro.com.br/recuperar-senha?token=${token}" target="_blank"></a>https://krro.com.br/recuperar-senha?token=${token}</p>
-        <br>
         <p>Este email foi gerado automaticamente, favor não responder.</p>
       `;
 
