@@ -3,6 +3,7 @@ export const errorMessages = {
     proibido: 'Acesso Proibido',
     badrequest: 'Requisição com problema',
     notfound: 'Não encontrado',
+    conflict: 'Já existe',
     internalServerError: 'Erro interno',
     generico: 'Erro na chamada da API',
     success: 'Ok',

@@ -43,6 +43,11 @@ export abstract class ResponseModule implements IControllerResponse {
         return res.status(statusCodeIds.not_found).send(defaultModel);
     }
 
+    public conflict(res: Response, model: any = {}) {
+      const defaultModel = this.buildModel(statusCodeIds.not_found, errorMessages.conflict, model);
+      return res.status(statusCodeIds.conflict).send(defaultModel);
+  }
+
     public genericMessage(res: Response, code: any, model: any) {
         return res.status(code).send(model);
     }
@@ -57,6 +62,8 @@ export abstract class ResponseModule implements IControllerResponse {
             return this.badRequest(res);
           case statusCodeIds.not_found: 
             return this.notFound(res);
+          case statusCodeIds.conflict: 
+            return this.conflict(res);
           default:
             return this.internalServerError(res);
         }
