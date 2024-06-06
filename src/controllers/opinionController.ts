@@ -115,7 +115,8 @@ export class OpinionController extends ResponseModule {
     }
 
     try {
-      const responseService = await this.opinionService.getModelOpinions(myFilter, false, null, pagination);
+      let mySort = { _id: 'desc' };
+      const responseService = await this.opinionService.getModelOpinions(myFilter, false, mySort, pagination);
       return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);

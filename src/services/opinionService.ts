@@ -241,6 +241,14 @@ export class OpinionService {
 
     let res = {};
 
+    if (!req.isAuthenticated()) {
+      await this.customerService.getCustomers({ email: req.body.data.userInfo.email }, true).then(user => {
+        if (user[0]) {
+          return Promise.reject({ statusCode: 409 });
+        }
+      });
+    }
+
     const dataReq = await this.setModelDataPayload(req);
     req = dataReq;
 
@@ -363,21 +371,9 @@ export class OpinionService {
     if (req.isAuthenticated()) {
       customerPayload = {_id: req.user.id, name: req.user.name};
     } else {
-      let foundUser;
-
-      await this.customerService.getCustomers({ email: user.email }, true).then(user => {
-        if (user[0]) {
-          foundUser = user[0];
-        }
-      });
-
-      if (foundUser) {
-        customerPayload = {_id: foundUser['_id'], name: foundUser['name']};
-      } else {
-        let newUserPayload = await this.setNewUserPayload(user); 
-        const createdUser = await this.customerService.setCustomer(newUserPayload);
-        customerPayload = {_id: createdUser['saved']['_id'], name: createdUser['saved']['name']};
-      }
+      let newUserPayload = await this.setNewUserPayload(user); 
+      const createdUser = await this.customerService.setCustomer(newUserPayload);
+      customerPayload = {_id: createdUser['saved']['_id'], name: createdUser['saved']['name']};
 
       req['user'] = customerPayload;
     }
@@ -409,7 +405,7 @@ export class OpinionService {
   }
 
   public async setNewUserPayload(user) {
-    const randomPassword = this.cryptoService.randomPasswordGenerator();
+    // const randomPassword = this.cryptoService.randomPasswordGenerator();
     // console.log('password gerado: '+randomPassword); senha aleatoria
     let newRole;
     
@@ -423,7 +419,7 @@ export class OpinionService {
       name: user.name,
       email: user.email,
       role: newRole,
-      password: randomPassword,
+      password: user.password,
       active: true
     };
 
