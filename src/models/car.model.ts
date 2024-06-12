@@ -28,6 +28,7 @@ const modelSchema = new mongoose.Schema({
     name: String,
     brand: Object,
     category: Object,
+    generation: Object,
     yearStart: Number,
     yearEnd: Number,
     average: Number,

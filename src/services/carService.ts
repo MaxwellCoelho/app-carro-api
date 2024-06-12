@@ -170,6 +170,7 @@ export class CarService {
           name: item['name'],
           brand: item['brand'],
           category: item['category'],
+          generation: item['generation'],
           url: item['url'],
           average: item['average'],
           val_length: item['val_length'],
@@ -218,6 +219,7 @@ export class CarService {
         _id: res['saved']._id,
         name: res['saved'].name,
         url: res['saved'].url,
+        generation: res['saved'].generation,
         brand: res['saved'].brand,
         active: res['saved'].active,
         review: res['saved'].review
