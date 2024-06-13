@@ -326,8 +326,6 @@ export class CarService {
         gearbox: res['saved'].gearbox,
         years: res['saved'].years,
         complement: res['saved'].complement,
-        image: res['saved'].image,
-        thumb: res['saved'].thumb,
         active: res['saved'].active,
         review: res['saved'].review
       };
@@ -391,7 +389,6 @@ export class CarService {
   
     const updateBrandPayload = {
       name: carBrand[0]['name'],
-      image: carBrand[0]['image'],
       active: carBrand[0]['active'],
       review: carBrand[0]['review'],
       average: newBrandAverage,
