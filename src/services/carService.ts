@@ -188,9 +188,14 @@ export class CarService {
   }
 
   public async setModel(req: any, id?: string): Promise<Object> {
-    let exists = id ? await this.getModels({ _id: id }) : null;
+    let foundById;
+    
+    
+    if (id) {
+      foundById = await this.getModels({ _id: id });
+    }
 
-    if (id && !exists) {
+    if (id && !foundById) {
       return Promise.reject({ statusCode: 404 });
     }
 
@@ -198,6 +203,23 @@ export class CarService {
       req.body.data = this.cryptoService.decodeJwt(req.body.data);
     } catch (error) {
       return Promise.reject({ statusCode: 401 });
+    }
+
+    const sanitizedName = this.utils.sanitizeText(req.body.data['name']);
+
+    if (!id) {
+      const foundByUrl = await this.getModels({ url: sanitizedName });
+      let foundActiveItem = false;
+
+      foundByUrl.forEach(item => {
+        if (item.active && !item.review) {
+          foundActiveItem = true;
+        }
+      });
+
+      if (foundActiveItem) {
+        return Promise.reject({ statusCode: 409 });
+      }
     }
 
     if (req.body.data['brand']) {
@@ -210,9 +232,9 @@ export class CarService {
 
     let res = {};
 
-    if (exists) {
-      let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
-      modifiedPost['url'] = this.utils.sanitizeText(modifiedPost.name);
+    if (foundById) {
+      let modifiedPost = this.customerService.setCreatedAndModifierUser(req, foundById);
+      modifiedPost['url'] = sanitizedName;
       res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
       // atualiza duplicações na collection de versoes
       const newModel = {
@@ -228,8 +250,8 @@ export class CarService {
       // atualiza duplicações na collection de opinioes de carros
       this.customerService.updateMany(opinionCarModel, ['model'], res['saved'], newModel);
     } else {
-      let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, modelModel);
-      createdPost['url'] = this.utils.sanitizeText(createdPost.name);
+      let createdPost = this.customerService.setCreatedAndModifierUser(req, foundById, modelModel);
+      createdPost['url'] = sanitizedName;
       createdPost['average'] = 0;
       createdPost['val_length'] = 0;
       res['saved'] = await createdPost.save();
