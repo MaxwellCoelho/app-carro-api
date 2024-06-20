@@ -8,11 +8,12 @@ export class BestService {
       ) { }
 
     public async getBestModels(pagination: any): Promise<any> {
-        let sort = { average: 'desc' };
+        let myFilter = { review: false, active: true, val_length: { $gt: 0 } };
+        let mySort = { average: 'desc' };
         let res;
 
         try {
-            res = await this.carService.getModels(null, true, sort, pagination);
+            res = await this.carService.getModels(myFilter, true, mySort, pagination);
         } catch (error) {
             return Promise.reject({ statusCode: 401 });
         }
