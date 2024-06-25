@@ -9,7 +9,7 @@ export class BestService {
 
     public async getBestModels(pagination: any): Promise<any> {
         let myFilter = { review: false, active: true, val_length: { $gt: 0 } };
-        let mySort = { average: 'desc' };
+        let mySort = { average: 'desc', _id: 'desc' };
         let res;
 
         try {
