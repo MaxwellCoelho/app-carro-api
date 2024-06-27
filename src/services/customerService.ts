@@ -100,6 +100,19 @@ export class CustomerService {
     } else {
       const createdPost = this.setCreatedAndModifierUser(req, idExists, customerModel);
       createdPost.password = this.cryptoService.encriptPassword(createdPost.password);
+
+      if (!createdPost.role) {
+        let newRole;
+    
+        await this.getRoles({ level: 3 }).then(role => {
+          if (role[0]) {
+            newRole = {_id: role[0]['_id'], name: role[0]['name'], level: role[0]['level']};
+          }
+        });
+
+        createdPost.role = newRole;
+      }
+
       res['saved'] = await createdPost.save();
     }
 

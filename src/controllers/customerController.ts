@@ -32,9 +32,9 @@ export class CustomerController extends ResponseModule {
   }
 
   public async saveCustomer(req: Request, res: Response) {
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-      return this.unauthorized(res);
-    }
+    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+    //   return this.unauthorized(res);
+    // }
 
     const id: string = req.params.id;
 
@@ -48,9 +48,9 @@ export class CustomerController extends ResponseModule {
   }
 
   public async removeCustomer(req: Request, res: Response) {
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-      return this.unauthorized(res);
-    }
+    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+    //   return this.unauthorized(res);
+    // }
 
     const id: string = req.params.id;
 
@@ -78,9 +78,9 @@ export class CustomerController extends ResponseModule {
   }
 
   public async saveRole(req: Request, res: Response) {
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-      return this.unauthorized(res);
-    }
+    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+    //   return this.unauthorized(res);
+    // }
 
     const id: string = req.params.id;
 
@@ -94,9 +94,9 @@ export class CustomerController extends ResponseModule {
   }
 
   public async removeRole(req: Request, res: Response) {
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-      return this.unauthorized(res);
-    }
+    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+    //   return this.unauthorized(res);
+    // }
     
     const id: string = req.params.id;
 
