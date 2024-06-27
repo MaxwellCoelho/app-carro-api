@@ -212,7 +212,7 @@ export class CarService {
       let foundActiveItem = false;
 
       foundByUrl.forEach(item => {
-        if (item.active && !item.review) {
+        if ((item.active && !item.review) && (req.body.data['brand'] && req.body.data['brand']['url'] === item.brand.url)) {
           foundActiveItem = true;
         }
       });
