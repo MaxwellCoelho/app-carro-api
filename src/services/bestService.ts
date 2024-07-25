@@ -1,14 +1,17 @@
 import { Request } from 'express'
 import { CarService } from '../services';
+import { Utils } from '../utils/utils';
 
 export class BestService {
 
     constructor(
         private carService: CarService,
+        private utils: Utils
       ) { }
 
-    public async getBestModels(pagination: any): Promise<any> {
-        let myFilter = { review: false, active: true, val_length: { $gt: 0 } };
+    public async getBestModels(pagination: any, filter?: any): Promise<any> {
+        let apiFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
+        let myFilter = { review: false, active: true, val_length: { $gt: 0 }, ...apiFilter };
         let mySort = { average: 'desc', _id: 'desc' };
         let res;
 

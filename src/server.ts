@@ -61,7 +61,7 @@ const customerService = new CustomerService(cryptoService, uDate, utils);
 const carService = new CarService(cryptoService, customerService, utils);
 const opinionService = new OpinionService(cryptoService, customerService, carService, utils);
 const authService = new AuthService(cryptoService, customerService);
-const bestService = new BestService(carService);
+const bestService = new BestService(carService, utils);
 const feedbackService = new FeedbackService(cryptoService, utils, customerService);
 
 // Instancia dos componentes injetáveis
@@ -70,7 +70,7 @@ const customerController = new CustomerController(customerService, cryptoService
 const carController = new CarController(carService, cryptoService, uDate);
 const opinionController = new OpinionController(opinionService, cryptoService, uDate);
 const authController = new AuthController(authService, cryptoService, uDate);
-const bestController = new BestController(bestService, uDate);
+const bestController = new BestController(bestService, uDate, cryptoService);
 const feedbackController = new FeedbackController(feedbackService, uDate);
 
 // INSTANCIA DAS ROTAS
