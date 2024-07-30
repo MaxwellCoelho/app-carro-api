@@ -11,6 +11,17 @@ export class UDate {
         }
     }
 
+    public simpleStamp(): string {
+        let date = this.getCurrentDateTimeString();
+        const dateAndHour = date.split(' ');
+        const myDate = dateAndHour[0];
+        const myHour = dateAndHour[1];
+        const splittedDate = myDate.split('/');
+        const splittedHour = myHour.split(':');
+        const stamp = `${splittedDate[2].slice(2)}${splittedDate[1]}${splittedDate[0]}${splittedHour[0]}${splittedHour[1]}`;
+        return stamp;
+    }
+
     public timeConsoleLog(log?: string, moreInf?: any): void {
         console.log(`${this.getCurrentDateTimeString()}`);
         if (log) {

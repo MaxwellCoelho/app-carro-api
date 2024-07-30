@@ -83,6 +83,10 @@ export class CustomerService {
         }
       }
 
+      if (!modifiedPost['url']) {
+        modifiedPost['url'] = `${this.uDate.simpleStamp()}-${this.utils.sanitizeText(modifiedPost['name'])}`;
+      }
+
       res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
       // se nao for atualização de favoritos atualiza duplicações nas outras collections
       if (!req.body.data['favorites']) {
@@ -112,6 +116,8 @@ export class CustomerService {
 
         createdPost.role = newRole;
       }
+
+      createdPost['url'] = `${this.uDate.simpleStamp()}-${this.utils.sanitizeText(createdPost['name'])}`;
 
       res['saved'] = await createdPost.save();
     }

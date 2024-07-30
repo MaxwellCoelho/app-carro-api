@@ -4,6 +4,7 @@ const customersSchema = new mongoose.Schema({
     name: String,
     role: Object,
     email: String,
+    url: String,
     password: String,
     password_reset_token: String,
     password_reset_expires: Date,
