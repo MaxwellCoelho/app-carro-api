@@ -83,7 +83,7 @@ export class CustomerService {
         }
       }
 
-      if (!modifiedPost['url']) {
+      if (!idExists[0]['url']) {
         modifiedPost['url'] = `${this.uDate.simpleStamp()}-${this.utils.sanitizeText(modifiedPost['name'])}`;
       }
 
