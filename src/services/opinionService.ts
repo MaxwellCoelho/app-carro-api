@@ -336,7 +336,7 @@ export class OpinionService {
         let newUserPayload = await this.setNewUserPayload(user); 
         const createdUser = await this.customerService.setCustomer(newUserPayload);
 
-        customerPayload = {_id: createdUser['saved']['_id'], name: createdUser['saved']['name']};
+        customerPayload = {_id: createdUser['saved']['_id'], name: createdUser['saved']['name'], url: createdUser['saved']['url']};
       }
 
       req['user'] = customerPayload;
@@ -369,11 +369,11 @@ export class OpinionService {
     let customerPayload;
 
     if (req.isAuthenticated()) {
-      customerPayload = {_id: req.user.id, name: req.user.name};
+      customerPayload = {_id: req.user.id, name: req.user.name, url: req.user.url};
     } else {
       let newUserPayload = await this.setNewUserPayload(user); 
       const createdUser = await this.customerService.setCustomer(newUserPayload);
-      customerPayload = {_id: createdUser['saved']['_id'], name: createdUser['saved']['name']};
+      customerPayload = {_id: createdUser['saved']['_id'], name: createdUser['saved']['name'], url: createdUser['saved']['url']};
 
       req['user'] = customerPayload;
     }
