@@ -10,6 +10,9 @@ export class CustomerRoutes {
         // CUSTOMERS ---------------------------------------------------
         app.get(['/api/customers', '/api/customers/:id'],
             async (req: Request, res: Response) => this.customerController.returnCustomer(req, res));
+
+        app.post('/api/customers/filter', 
+            async (req: Request, res: Response) => this.customerController.returnFilteredCustomer(req, res));
             
         app.post(['/api/customers', '/api/customers/:id'],
             async (req: Request, res: Response) => this.customerController.saveCustomer(req, res));

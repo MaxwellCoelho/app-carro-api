@@ -16,13 +16,15 @@ export class CustomerService {
   ) { }
 
   // CUSTOMERS ---------------------------------------------------
-  public async getCustomers(filter?: any, resumed?: boolean): Promise<any> {
+  public async getCustomers(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
-    let mySort = { 'role.level': 'asc', name: 'asc' }
+    let sorted = mySort ? mySort : { 'role.level': 'asc', name: 'asc' };
     let res;
+    const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
+    const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
     
     try {
-      res = await customerModel.find(myFilter).sort(mySort);
+      res = await customerModel.find(myFilter).sort(sorted).skip(offset).limit(pageSize);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }

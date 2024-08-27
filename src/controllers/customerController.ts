@@ -31,6 +31,44 @@ export class CustomerController extends ResponseModule {
     }
   }
 
+  public async returnFilteredCustomer(req: Request, res: Response) {
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    let myFilter = req.body.data;
+    let mySort = {};
+    let pagination = {}; 
+    if (req.query['page'] && req.query['perpage']) {
+      pagination = {
+          page: Number(req.query['page']),
+          perpage: Number(req.query['perpage'])
+      }
+    } 
+
+    const queryArr = req.query ? Object.entries(req.query) : [];
+    queryArr.forEach(param => {
+      if (param[0].includes('sort.')) {
+        const paramName = param[0].split('.')[1];
+        mySort = {[paramName]: param[1]};
+      }
+    });
+
+    if (!Object.keys(mySort).length) {
+      mySort = { _id: 'desc' };
+    }
+
+    try {
+      const responseService = await this.customerService.getCustomers(myFilter, false, mySort, pagination);
+      return this.success(res, { customers: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
+
   public async saveCustomer(req: Request, res: Response) {
     // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
     //   return this.unauthorized(res);
