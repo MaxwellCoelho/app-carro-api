@@ -31,9 +31,9 @@ export class CarController extends ResponseModule {
   }
 
   public async saveCategory(req: Request, res: Response) {
-    if (!req.isAuthenticated()) {
-      return this.unauthorized(res);
-    }
+    // if (!req.isAuthenticated()) {
+    //   return this.unauthorized(res);
+    // }
 
     const id: string = req.params.id;
 
@@ -47,9 +47,9 @@ export class CarController extends ResponseModule {
   }
 
   public async removeCategory(req: Request, res: Response) {
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-      return this.unauthorized(res);
-    }
+    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+    //   return this.unauthorized(res);
+    // }
 
     const id: string = req.params.id;
 
@@ -89,9 +89,9 @@ export class CarController extends ResponseModule {
   }
 
   public async removeBrand(req: Request, res: Response) {
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-      return this.unauthorized(res);
-    }
+    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+    //   return this.unauthorized(res);
+    // }
 
     const id: string = req.params.id;
 
@@ -126,9 +126,25 @@ export class CarController extends ResponseModule {
     }
 
     let myFilter = req.body.data;
+    let mySort;
+    let pagination = {}; 
+    if (req.query['page'] && req.query['perpage']) {
+      pagination = {
+          page: Number(req.query['page']),
+          perpage: Number(req.query['perpage'])
+      }
+    } 
+
+    const queryArr = req.query ? Object.entries(req.query) : [];
+    queryArr.forEach(param => {
+      if (param[0].includes('sort.')) {
+        const paramName = param[0].split('.')[1];
+        mySort = {[paramName]: param[1]};
+      }
+    });
 
     try {
-      const responseService = await this.carService.getModels(myFilter);
+      const responseService = await this.carService.getModels(myFilter, false, mySort, pagination);
       return this.success(res, { models: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -149,9 +165,9 @@ export class CarController extends ResponseModule {
   }
 
   public async removeModel(req: Request, res: Response) {
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-      return this.unauthorized(res);
-    }
+    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+    //   return this.unauthorized(res);
+    // }
     
     const id: string = req.params.id;
 
@@ -209,9 +225,9 @@ export class CarController extends ResponseModule {
   }
 
   public async removeVersion(req: Request, res: Response) {
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-      return this.unauthorized(res);
-    }
+    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+    //   return this.unauthorized(res);
+    // }
     
     const id: string = req.params.id;
 
