@@ -52,10 +52,27 @@ export class OpinionController extends ResponseModule {
     }
 
     let myFilter = req.body.data;
+    let mySort;
+    let pagination = {}; 
+    if (req.query['page'] && req.query['perpage']) {
+      pagination = {
+          page: Number(req.query['page']),
+          perpage: Number(req.query['perpage'])
+      }
+    } 
+
+    const queryArr = req.query ? Object.entries(req.query) : [];
+    queryArr.forEach(param => {
+      if (param[0].includes('sort.')) {
+        if (!mySort) { mySort = {} }
+        const paramName = param[0].split('.')[1];
+        mySort[paramName] = param[1];
+      }
+    });
 
     try {
-      const responseService = await this.opinionService.getBrandOpinions(myFilter);
-      return this.success(res, { models: responseService });
+      const responseService = await this.opinionService.getBrandOpinions(myFilter, false, mySort, pagination);
+      return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.errorHandler(error, res);
@@ -132,11 +149,27 @@ export class OpinionController extends ResponseModule {
     }
 
     let myFilter = req.body.data;
-    let mySort = { year_bought: 'desc', kept_period: 'desc' };
+    let mySort;
+    let pagination = {}; 
+    if (req.query['page'] && req.query['perpage']) {
+      pagination = {
+          page: Number(req.query['page']),
+          perpage: Number(req.query['perpage'])
+      }
+    } 
+
+    const queryArr = req.query ? Object.entries(req.query) : [];
+    queryArr.forEach(param => {
+      if (param[0].includes('sort.')) {
+        if (!mySort) { mySort = {} }
+        const paramName = param[0].split('.')[1];
+        mySort[paramName] = param[1];
+      }
+    });
 
     try {
-      const responseService = await this.opinionService.getModelOpinions(myFilter, false, mySort);
-      return this.success(res, { models: responseService });
+      const responseService = await this.opinionService.getModelOpinions(myFilter, false, mySort, pagination);
+      return this.success(res, responseService);
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
       return this.errorHandler(error, res);

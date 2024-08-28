@@ -202,9 +202,25 @@ export class CarController extends ResponseModule {
     }
 
     let myFilter = req.body.data;
+    let mySort;
+    let pagination = {}; 
+    if (req.query['page'] && req.query['perpage']) {
+      pagination = {
+          page: Number(req.query['page']),
+          perpage: Number(req.query['perpage'])
+      }
+    } 
+
+    const queryArr = req.query ? Object.entries(req.query) : [];
+    queryArr.forEach(param => {
+      if (param[0].includes('sort.')) {
+        const paramName = param[0].split('.')[1];
+        mySort = {[paramName]: param[1]};
+      }
+    });
 
     try {
-      const responseService = await this.carService.getVersion(myFilter);
+      const responseService = await this.carService.getVersion(myFilter, false, mySort, pagination);
       return this.success(res, { versions: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
