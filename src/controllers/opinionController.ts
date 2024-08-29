@@ -4,7 +4,8 @@ import { OpinionService, CryptoService } from '../services';
 import { ResponseModule } from '../architecture/responseModule';
 import { config } from '../config/config';
 
-import { UDate } from '../utils/udate';
+import { UDate, Utils } from '../utils';
+import { CustomRequest } from "../architecture/definitionfile"
 
 export class OpinionController extends ResponseModule {
   private conf = config;
@@ -13,6 +14,7 @@ export class OpinionController extends ResponseModule {
       private opinionService: OpinionService,
       public cryptoService: CryptoService,
       private uDate: UDate,
+      private utils: Utils,
     ) {
       super();
   }
@@ -21,14 +23,7 @@ export class OpinionController extends ResponseModule {
   public async returnBrandOpinion(req: Request, res: Response) {
     const brand: string = req.params.brand;
     let myFilter = {};
-    let pagination = {};
-
-    if (req.query['page'] && req.query['perpage']) {
-      pagination = {
-          page: Number(req.query['page']),
-          perpage: Number(req.query['perpage'])
-      }
-    }  
+    let pagination = this.utils.returnPaginationObject(req);
 
     if (brand) {
       myFilter['brand._id'] = brand;
@@ -52,23 +47,8 @@ export class OpinionController extends ResponseModule {
     }
 
     let myFilter = req.body.data;
-    let mySort;
-    let pagination = {}; 
-    if (req.query['page'] && req.query['perpage']) {
-      pagination = {
-          page: Number(req.query['page']),
-          perpage: Number(req.query['perpage'])
-      }
-    } 
-
-    const queryArr = req.query ? Object.entries(req.query) : [];
-    queryArr.forEach(param => {
-      if (param[0].includes('sort.')) {
-        if (!mySort) { mySort = {} }
-        const paramName = param[0].split('.')[1];
-        mySort[paramName] = param[1];
-      }
-    });
+    let mySort = this.utils.returnSortObject(req);
+    let pagination = this.utils.returnPaginationObject(req);
 
     try {
       const responseService = await this.opinionService.getBrandOpinions(myFilter, false, mySort, pagination);
@@ -95,10 +75,10 @@ export class OpinionController extends ResponseModule {
     }
   }
 
-  public async removeBrandOpinion(req: Request, res: Response) {
-    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-    //   return this.unauthorized(res);
-    // }
+  public async removeBrandOpinion(req: CustomRequest, res: Response) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+      return this.unauthorized(res);
+    }
 
     const id: string = req.params.id;
 
@@ -116,14 +96,7 @@ export class OpinionController extends ResponseModule {
     const brand: string = req.params.brand;
     const car: string = req.params.car;
     let myFilter = {};
-    let pagination = {};
-
-    if (req.query['page'] && req.query['perpage']) {
-      pagination = {
-          page: Number(req.query['page']),
-          perpage: Number(req.query['perpage'])
-      }
-    }  
+    let pagination = this.utils.returnPaginationObject(req);
 
     if (brand && car) {
       myFilter['model.brand._id'] = brand;
@@ -149,23 +122,8 @@ export class OpinionController extends ResponseModule {
     }
 
     let myFilter = req.body.data;
-    let mySort;
-    let pagination = {}; 
-    if (req.query['page'] && req.query['perpage']) {
-      pagination = {
-          page: Number(req.query['page']),
-          perpage: Number(req.query['perpage'])
-      }
-    } 
-
-    const queryArr = req.query ? Object.entries(req.query) : [];
-    queryArr.forEach(param => {
-      if (param[0].includes('sort.')) {
-        if (!mySort) { mySort = {} }
-        const paramName = param[0].split('.')[1];
-        mySort[paramName] = param[1];
-      }
-    });
+    let mySort = this.utils.returnSortObject(req);
+    let pagination = this.utils.returnPaginationObject(req);
 
     try {
       const responseService = await this.opinionService.getModelOpinions(myFilter, false, mySort, pagination);
@@ -192,10 +150,10 @@ export class OpinionController extends ResponseModule {
     }
   }
 
-  public async removeModelOpinion(req: Request, res: Response) {
-    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-    //   return this.unauthorized(res);
-    // }
+  public async removeModelOpinion(req: CustomRequest, res: Response) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+      return this.unauthorized(res);
+    }
 
     const id: string = req.params.id;
 

@@ -136,7 +136,7 @@ export class CustomerService {
   public async deleteCustomer(id: string): Promise<Object> {
     let res = {};
     res['removed'] = await customerModel.findByIdAndDelete({ _id: id });
-    res['customers'] = await this.getCustomers();
+    // res['customers'] = await this.getCustomers();
 
     return res
       ? Promise.resolve(res)

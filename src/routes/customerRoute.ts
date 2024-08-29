@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { CustomerController } from '../controllers';
+import { CustomRequest } from "../architecture/definitionfile"
 
 
 export class CustomerRoutes {
@@ -18,7 +19,7 @@ export class CustomerRoutes {
             async (req: Request, res: Response) => this.customerController.saveCustomer(req, res));
 
         app.delete('/api/customers/:id', 
-            async (req: Request, res: Response) => this.customerController.removeCustomer(req, res));
+            async (req: CustomRequest, res: Response) => this.customerController.removeCustomer(req, res));
 
         // ROLES ---------------------------------------------------
         app.get(['/api/roles', '/api/roles/:id'],
@@ -28,6 +29,6 @@ export class CustomerRoutes {
             async (req: Request, res: Response) => this.customerController.saveRole(req, res));
 
         app.delete('/api/roles/:id', 
-            async (req: Request, res: Response) => this.customerController.removeRole(req, res));
+            async (req: CustomRequest, res: Response) => this.customerController.removeRole(req, res));
     }
 }

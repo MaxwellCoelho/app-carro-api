@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { OpinionController } from '../controllers';
+import { CustomRequest } from "../architecture/definitionfile"
 
 
 export class OpinionRoutes {
@@ -19,7 +20,7 @@ export class OpinionRoutes {
             async (req: Request, res: Response) => this.opinionController.saveBrandOpinion(req, res));
 
         app.delete('/api/opinion/brand/:id', 
-            async (req: Request, res: Response) => this.opinionController.removeBrandOpinion(req, res));
+            async (req: CustomRequest, res: Response) => this.opinionController.removeBrandOpinion(req, res));
         
         // MODEL ---------------------------------------------------
         app.get(['/api/opinion/model', '/api/opinion/model/:brand/:car'], 
@@ -32,6 +33,6 @@ export class OpinionRoutes {
             async (req: Request, res: Response) => this.opinionController.saveModelOpinion(req, res));
 
         app.delete('/api/opinion/model/:id', 
-            async (req: Request, res: Response) => this.opinionController.removeModelOpinion(req, res));
+            async (req: CustomRequest, res: Response) => this.opinionController.removeModelOpinion(req, res));
     }
 }

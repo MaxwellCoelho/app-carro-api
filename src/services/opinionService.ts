@@ -167,8 +167,8 @@ export class OpinionService {
     let res = {};
     res['removed'] = await opinionBrandModel.findByIdAndDelete({ _id: id });
     this.carService.updateBrandAverage(res['removed'], 'delete');
-    const result = await this.getBrandOpinions();
-    res['opinions'] = result['opinions'];
+    // const result = await this.getBrandOpinions();
+    // res['opinions'] = result['opinions'];
 
     return res
       ? Promise.resolve(res)
@@ -306,8 +306,8 @@ export class OpinionService {
     let res = {};
     res['removed'] = await opinionCarModel.findByIdAndDelete({ _id: id });
     this.carService.updateModelAverage(res['removed'], 'delete');
-    const result = await this.getModelOpinions();
-    res['opinions'] = result['opinions'];
+    // const result = await this.getModelOpinions();
+    // res['opinions'] = result['opinions'];
 
     return res
       ? Promise.resolve(res)

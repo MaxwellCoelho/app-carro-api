@@ -138,7 +138,7 @@ export class CarService {
   public async deleteBrand(id: string): Promise<Object> {
     let res = {};
     res['removed'] = await brandModel.findByIdAndDelete({ _id: id });
-    res['brands'] = await this.getBrands();
+    // res['brands'] = await this.getBrands();
 
     return res
       ? Promise.resolve(res)
@@ -265,7 +265,7 @@ export class CarService {
   public async deleteModel(id: string): Promise<Object> {
     let res = {};
     res['removed'] = await modelModel.findByIdAndDelete({ _id: id });
-    res['models'] = await this.getModels();
+    // res['models'] = await this.getModels();
 
     return res
       ? Promise.resolve(res)
@@ -369,7 +369,7 @@ export class CarService {
   public async deleteVersion(id: string): Promise<Object> {
     let res = {};
     res['removed'] = await versionModel.findByIdAndDelete({ _id: id });
-    res['versions'] = await this.getVersion();
+    // res['versions'] = await this.getVersion();
 
     return res
       ? Promise.resolve(res)

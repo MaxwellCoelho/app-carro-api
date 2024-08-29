@@ -4,7 +4,8 @@ import { CustomerService, CryptoService } from '../services';
 import { ResponseModule } from '../architecture/responseModule';
 import { config } from '../config/config';
 
-import { UDate } from '../utils/udate';
+import { UDate, Utils } from '../utils';
+import { CustomRequest } from "../architecture/definitionfile"
 
 export class CustomerController extends ResponseModule {
   private conf = config;
@@ -13,6 +14,7 @@ export class CustomerController extends ResponseModule {
       private customerService: CustomerService,
       public cryptoService: CryptoService,
       private uDate: UDate,
+      private utils: Utils,
     ) {
       super();
   }
@@ -39,22 +41,8 @@ export class CustomerController extends ResponseModule {
     }
 
     let myFilter = req.body.data;
-    let mySort = {};
-    let pagination = {}; 
-    if (req.query['page'] && req.query['perpage']) {
-      pagination = {
-          page: Number(req.query['page']),
-          perpage: Number(req.query['perpage'])
-      }
-    } 
-
-    const queryArr = req.query ? Object.entries(req.query) : [];
-    queryArr.forEach(param => {
-      if (param[0].includes('sort.')) {
-        const paramName = param[0].split('.')[1];
-        mySort = {[paramName]: param[1]};
-      }
-    });
+    let mySort = this.utils.returnSortObject(req);
+    let pagination = this.utils.returnPaginationObject(req);
 
     if (!Object.keys(mySort).length) {
       mySort = { _id: 'desc' };
@@ -85,10 +73,10 @@ export class CustomerController extends ResponseModule {
     }
   }
 
-  public async removeCustomer(req: Request, res: Response) {
-    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-    //   return this.unauthorized(res);
-    // }
+  public async removeCustomer(req: CustomRequest, res: Response) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+      return this.unauthorized(res);
+    }
 
     const id: string = req.params.id;
 
@@ -131,10 +119,10 @@ export class CustomerController extends ResponseModule {
     }
   }
 
-  public async removeRole(req: Request, res: Response) {
-    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-    //   return this.unauthorized(res);
-    // }
+  public async removeRole(req: CustomRequest, res: Response) {
+    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+      return this.unauthorized(res);
+    }
     
     const id: string = req.params.id;
 
