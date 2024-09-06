@@ -174,6 +174,8 @@ export class CarService {
           url: item['url'],
           average: item['average'],
           val_length: item['val_length'],
+          likes_length: item['likes_length'],
+          dislikes_length: item['dislikes_length'],
           active: item['active'],
           review: item['review']
         };
@@ -234,7 +236,9 @@ export class CarService {
 
     if (foundById) {
       let modifiedPost = this.customerService.setCreatedAndModifierUser(req, foundById);
-      modifiedPost['url'] = sanitizedName;
+      if (sanitizedName) {
+        modifiedPost['url'] = sanitizedName;
+      }
       res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
       // atualiza duplicações na collection de versoes
       const newModel = {
@@ -243,6 +247,8 @@ export class CarService {
         url: res['saved'].url,
         generation: res['saved'].generation,
         brand: res['saved'].brand,
+        likes_length: res['likes_length'],
+        dislikes_length: res['dislikes_length'],
         active: res['saved'].active,
         review: res['saved'].review
       };
@@ -254,6 +260,8 @@ export class CarService {
       createdPost['url'] = sanitizedName;
       createdPost['average'] = 0;
       createdPost['val_length'] = 0;
+      createdPost['likes_length'] = 0;
+      createdPost['dislikes_length'] = 0;
       res['saved'] = await createdPost.save();
     }
 

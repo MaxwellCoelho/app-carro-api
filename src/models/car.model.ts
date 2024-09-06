@@ -31,6 +31,8 @@ const modelSchema = new mongoose.Schema({
     yearEnd: Number,
     average: Number,
     val_length: Number,
+    likes_length: Number,
+    dislikes_length: Number,
     url: String,
     active: Boolean,
     review: Boolean,
