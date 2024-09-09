@@ -30,6 +30,7 @@ const modelSchema = new mongoose.Schema({
     yearStart: Number,
     yearEnd: Number,
     average: Number,
+    average_no_reactions: Number,
     val_length: Number,
     likes_length: Number,
     dislikes_length: Number,

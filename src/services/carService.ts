@@ -172,6 +172,7 @@ export class CarService {
           category: item['category'],
           generation: item['generation'],
           url: item['url'],
+          average_no_reactions: item['average_no_reactions'],
           average: item['average'],
           val_length: item['val_length'],
           likes_length: item['likes_length'],
@@ -239,6 +240,8 @@ export class CarService {
       if (sanitizedName) {
         modifiedPost['url'] = sanitizedName;
       }
+      modifiedPost['average_no_reactions'] = foundById[0] && foundById[0]['average_no_reactions'] ? foundById[0]['average_no_reactions'] : 0;
+      modifiedPost['average'] = this.updateWithReactionsAverage(modifiedPost);
       res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
       // atualiza duplicações na collection de versoes
       const newModel = {
@@ -247,8 +250,10 @@ export class CarService {
         url: res['saved'].url,
         generation: res['saved'].generation,
         brand: res['saved'].brand,
-        likes_length: res['likes_length'],
-        dislikes_length: res['dislikes_length'],
+        average: res['saved'].average,
+        average_no_reactions: res['saved'].average_no_reactions,
+        likes_length: res['saved'].likes_length,
+        dislikes_length: res['saved'].dislikes_length,
         active: res['saved'].active,
         review: res['saved'].review
       };
@@ -259,6 +264,7 @@ export class CarService {
       let createdPost = this.customerService.setCreatedAndModifierUser(req, foundById, modelModel);
       createdPost['url'] = sanitizedName;
       createdPost['average'] = 0;
+      createdPost['average_no_reactions'] = 0;
       createdPost['val_length'] = 0;
       createdPost['likes_length'] = 0;
       createdPost['dislikes_length'] = 0;
@@ -444,11 +450,11 @@ export class CarService {
     switch (operation) {
       case 'set':
         newModelValLength = carModel[0]['val_length'] + 1;
-        newModelAverage = ((carModel[0]['average'] * carModel[0]['val_length']) + modelAverage) / newModelValLength;
+        newModelAverage = ((carModel[0]['average_no_reactions'] * carModel[0]['val_length']) + modelAverage) / newModelValLength;
         break;
       case 'delete':
         newModelValLength = carModel[0]['val_length'] - 1;
-        newModelAverage = ((carModel[0]['average'] * carModel[0]['val_length']) - modelAverage) / newModelValLength;
+        newModelAverage = ((carModel[0]['average_no_reactions'] * carModel[0]['val_length']) - modelAverage) / newModelValLength;
         break;
     }
 
@@ -471,7 +477,7 @@ export class CarService {
       brand: carModel[0]['brand'],
       active: carModel[0]['active'],
       review: carModel[0]['review'],
-      average: newModelAverage,
+      average_no_reactions: newModelAverage,
       val_length: newModelValLength
     };
 
@@ -485,5 +491,19 @@ export class CarService {
       modelPayload['user'] = carModel[0]['modified_by'];
     }
     this.setModel(modelPayload, modelId);
+  }
+
+  public updateWithReactionsAverage(payload: any): number {
+    const qtdAverageItens = 7;
+    const currentAverageTotal = payload['average_no_reactions'] * qtdAverageItens;
+
+    const totalGoodReactions = payload['likes_length'] || 0;
+    const totalBadReactions = payload['dislikes_length'] || 0;
+    const totalReactions = totalBadReactions + totalGoodReactions;
+    const showDefault = totalReactions === 0 || (totalBadReactions === totalGoodReactions);
+    const reactionAverage = showDefault ? 2.5 : ((totalGoodReactions * 100) / totalReactions) / 20;
+
+    const newAverage = (currentAverageTotal + reactionAverage) / (qtdAverageItens + 1);
+    return newAverage;
   }
 }
