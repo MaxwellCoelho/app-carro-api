@@ -36,7 +36,8 @@ export class CustomerService {
         const resumedObj = {
           _id: item['_id'],
           name: item['name'],
-          url: item['url']
+          url: item['url'],
+          avatar: item['avatar']
         };
         resumedArray.push(resumedObj);
       }
@@ -96,7 +97,8 @@ export class CustomerService {
         const newCustomer = {
           _id: res['saved']._id,
           name: res['saved'].name,
-          url: res['saved'].url
+          url: res['saved'].url,
+          avatar: res['saved'].avatar
         };
         const modelsToUpdate = [
           roleModel, categoryModel, brandModel, modelModel, versionModel, opinionCarModel, opinionBrandModel
@@ -215,7 +217,7 @@ export class CustomerService {
       };
 
       if (req.user) {
-        postPayload.modified_by = {_id: req.user._id, name: req.user.name, url: req.user.url};
+        postPayload.modified_by = {_id: req.user._id, name: req.user.name, url: req.user.url, avatar: req.user.avatar};
       }
     } else {
       postPayload = new model(req.body.data);
@@ -223,7 +225,7 @@ export class CustomerService {
       postPayload.modified = timeStamp;
 
       if (req.user) {
-        postPayload.created_by = {_id: req.user._id, name: req.user.name, url: req.user.url};
+        postPayload.created_by = {_id: req.user._id, name: req.user.name, url: req.user.url, avatar: req.user.avatar};
         postPayload.modified_by = postPayload.created_by;
       }
     }

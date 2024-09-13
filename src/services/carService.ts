@@ -240,7 +240,16 @@ export class CarService {
       if (sanitizedName) {
         modifiedPost['url'] = sanitizedName;
       }
-      modifiedPost['average_no_reactions'] = foundById[0] && foundById[0]['average_no_reactions'] ? foundById[0]['average_no_reactions'] : 0;
+      
+      if (!modifiedPost['average_no_reactions']) {
+        modifiedPost['average_no_reactions'] = foundById[0] && foundById[0]['average_no_reactions'] ? foundById[0]['average_no_reactions'] : 0;
+      }
+
+      if (!modifiedPost['likes_length'] || !modifiedPost['dislikes_length']) {
+        modifiedPost['likes_length'] = foundById[0] && foundById[0]['likes_length'] ? foundById[0]['likes_length'] : 0;
+        modifiedPost['dislikes_length'] = foundById[0] && foundById[0]['dislikes_length'] ? foundById[0]['dislikes_length'] : 0;
+      }
+      
       modifiedPost['average'] = this.updateWithReactionsAverage(modifiedPost);
       res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
       // atualiza duplicações na collection de versoes
