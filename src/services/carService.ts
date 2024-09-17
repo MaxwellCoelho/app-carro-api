@@ -245,7 +245,8 @@ export class CarService {
         modifiedPost['average_no_reactions'] = foundById[0] && foundById[0]['average_no_reactions'] ? foundById[0]['average_no_reactions'] : 0;
       }
 
-      if (!modifiedPost['likes_length'] || !modifiedPost['dislikes_length']) {
+      if (modifiedPost['likes_length'] === undefined || modifiedPost['likes_length'] === null
+          || !modifiedPost['dislikes_length'] === undefined || !modifiedPost['dislikes_length'] === null) {
         modifiedPost['likes_length'] = foundById[0] && foundById[0]['likes_length'] ? foundById[0]['likes_length'] : 0;
         modifiedPost['dislikes_length'] = foundById[0] && foundById[0]['dislikes_length'] ? foundById[0]['dislikes_length'] : 0;
       }
