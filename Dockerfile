@@ -5,6 +5,7 @@ ENV NODE_ENV=production
 WORKDIR /
 
 COPY package.json .
+COPY tsconfig.json .
 
 RUN npm install typescript@4.1.6 -g
 RUN npm install
