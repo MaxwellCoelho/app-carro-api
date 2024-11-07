@@ -2,7 +2,7 @@ FROM node:14.17.0 AS production
 
 ENV NODE_ENV=production
 
-WORKDIR /app
+WORKDIR /
 
 COPY package.json .
 
