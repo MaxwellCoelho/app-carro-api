@@ -3,7 +3,7 @@ COPY package.json .
 COPY tsconfig.json .
 RUN npm cache clean --force
 RUN npm install typescript@4.1.6 -g
-RUN npm install
+RUN npm install --force
 COPY . ./
 RUN npm run build
 CMD ["sh", "-c", "npm run start"]
