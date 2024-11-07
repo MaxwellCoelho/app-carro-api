@@ -16,7 +16,7 @@ export class CarService {
   // CATEGORIES ---------------------------------------------------
   public async getCategories(id?: string): Promise<Object> {
     let filter = id ? { _id: id } : {};
-    let mySort = { name: 'asc' };
+    let mySort = { name: 'asc' as const };
     let res;
 
     try {

@@ -149,7 +149,7 @@ export class CustomerService {
   // ROLES ---------------------------------------------------
   public async getRoles(filter?: any): Promise<Object> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
-    let mySort = { level: 'asc' }
+    let mySort = { level: 'asc' as const }
     let res;
 
     try {
