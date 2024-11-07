@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { CarController } from '../controllers';
+import { CustomRequest } from "../architecture/definitionfile"
 
 
 export class CarRoutes {
@@ -12,20 +13,23 @@ export class CarRoutes {
             async (req: Request, res: Response) => this.carController.returnCategory(req, res));
 
         app.post(['/api/cars/categories', '/api/cars/categories/:id'],
-            async (req: Request, res: Response) => this.carController.saveCategory(req, res));
+            async (req: CustomRequest, res: Response) => this.carController.saveCategory(req, res));
 
         app.delete('/api/cars/categories/:id', 
-            async (req: Request, res: Response) => this.carController.removeCategory(req, res));
+            async (req: CustomRequest, res: Response) => this.carController.removeCategory(req, res));
 
         // BRANDS ---------------------------------------------------
         app.get(['/api/cars/brands', '/api/cars/brands/:id'], 
             async (req: Request, res: Response) => this.carController.returnBrand(req, res));
 
+        app.post(['/api/cars/brands/filter'], 
+            async (req: Request, res: Response) => this.carController.returnFilteredBrand(req, res));
+
         app.post(['/api/cars/brands', '/api/cars/brands/:id'], 
             async (req: Request, res: Response) => this.carController.saveBrand(req, res));
         
         app.delete('/api/cars/brands/:id', 
-            async (req: Request, res: Response) => this.carController.removeBrand(req, res));
+            async (req: CustomRequest, res: Response) => this.carController.removeBrand(req, res));
         
         // MODELS ---------------------------------------------------
         app.get(['/api/cars/models', '/api/cars/models/:id'], 
@@ -38,7 +42,7 @@ export class CarRoutes {
             async (req: Request, res: Response) => this.carController.saveModel(req, res));
 
         app.delete('/api/cars/models/:id', 
-            async (req: Request, res: Response) => this.carController.removeModel(req, res));
+            async (req: CustomRequest, res: Response) => this.carController.removeModel(req, res));
 
         // VERSIONS ---------------------------------------------------
         app.get(['/api/cars/versions', '/api/cars/versions/:id'], 
@@ -51,6 +55,6 @@ export class CarRoutes {
             async (req: Request, res: Response) => this.carController.saveVersion(req, res));
 
         app.delete('/api/cars/versions/:id', 
-            async (req: Request, res: Response) => this.carController.removeVersion(req, res));
+            async (req: CustomRequest, res: Response) => this.carController.removeVersion(req, res));
     }
 }

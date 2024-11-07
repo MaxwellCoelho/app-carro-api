@@ -4,7 +4,8 @@ import { CustomerService, CryptoService } from '../services';
 import { ResponseModule } from '../architecture/responseModule';
 import { config } from '../config/config';
 
-import { UDate } from '../utils/udate';
+import { UDate, Utils } from '../utils';
+import { CustomRequest } from "../architecture/definitionfile"
 
 export class CustomerController extends ResponseModule {
   private conf = config;
@@ -13,6 +14,7 @@ export class CustomerController extends ResponseModule {
       private customerService: CustomerService,
       public cryptoService: CryptoService,
       private uDate: UDate,
+      private utils: Utils,
     ) {
       super();
   }
@@ -31,10 +33,34 @@ export class CustomerController extends ResponseModule {
     }
   }
 
-  public async saveCustomer(req: Request, res: Response) {
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-      return this.unauthorized(res);
+  public async returnFilteredCustomer(req: Request, res: Response) {
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
     }
+
+    let myFilter = req.body.data;
+    let mySort = this.utils.returnSortObject(req);
+    let pagination = this.utils.returnPaginationObject(req);
+
+    if (!Object.keys(mySort).length) {
+      mySort = { _id: 'desc' };
+    }
+
+    try {
+      const responseService = await this.customerService.getCustomers(myFilter, false, mySort, pagination);
+      return this.success(res, { customers: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
+
+  public async saveCustomer(req: Request, res: Response) {
+    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+    //   return this.unauthorized(res);
+    // }
 
     const id: string = req.params.id;
 
@@ -47,7 +73,7 @@ export class CustomerController extends ResponseModule {
     }
   }
 
-  public async removeCustomer(req: Request, res: Response) {
+  public async removeCustomer(req: CustomRequest, res: Response) {
     if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }
@@ -78,9 +104,9 @@ export class CustomerController extends ResponseModule {
   }
 
   public async saveRole(req: Request, res: Response) {
-    if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
-      return this.unauthorized(res);
-    }
+    // if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
+    //   return this.unauthorized(res);
+    // }
 
     const id: string = req.params.id;
 
@@ -93,7 +119,7 @@ export class CustomerController extends ResponseModule {
     }
   }
 
-  public async removeRole(req: Request, res: Response) {
+  public async removeRole(req: CustomRequest, res: Response) {
     if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }

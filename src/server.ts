@@ -45,7 +45,7 @@ import {
 } from './controllers';
 
 // Conexão com base de dados
-const mongoUri = `mongodb://${process.env.MONGO_USER}:${encodeURIComponent(process.env.MONGO_PWD)}@${process.env.MONGO_IP}:27017/appcarrodb?${process.env.MONGO_PARAMS}`;
+const mongoUri = `mongodb://${process.env.MONGO_USER}:${encodeURIComponent(process.env.MONGO_PWD)}@${process.env.MONGO_IP}:${process.env.MONGO_PORT}/appcarrodb?${process.env.MONGO_PARAMS}`;
 mongoose.connect(mongoUri)
     .then(() => console.log('Connected to database'))
     .catch(err => console.log(err));
@@ -61,16 +61,16 @@ const customerService = new CustomerService(cryptoService, uDate, utils);
 const carService = new CarService(cryptoService, customerService, utils);
 const opinionService = new OpinionService(cryptoService, customerService, carService, utils);
 const authService = new AuthService(cryptoService, customerService);
-const bestService = new BestService(carService);
+const bestService = new BestService(carService, utils);
 const feedbackService = new FeedbackService(cryptoService, utils, customerService);
 
 // Instancia dos componentes injetáveis
 const testController = new TestController(testService, uDate);
-const customerController = new CustomerController(customerService, cryptoService, uDate);
-const carController = new CarController(carService, cryptoService, uDate);
-const opinionController = new OpinionController(opinionService, cryptoService, uDate);
+const customerController = new CustomerController(customerService, cryptoService, uDate, utils);
+const carController = new CarController(carService, cryptoService, uDate, utils);
+const opinionController = new OpinionController(opinionService, cryptoService, uDate, utils);
 const authController = new AuthController(authService, cryptoService, uDate);
-const bestController = new BestController(bestService, uDate);
+const bestController = new BestController(bestService, uDate, utils, cryptoService);
 const feedbackController = new FeedbackController(feedbackService, uDate);
 
 // INSTANCIA DAS ROTAS

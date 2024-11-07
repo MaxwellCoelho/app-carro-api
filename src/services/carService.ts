@@ -138,7 +138,7 @@ export class CarService {
   public async deleteBrand(id: string): Promise<Object> {
     let res = {};
     res['removed'] = await brandModel.findByIdAndDelete({ _id: id });
-    res['brands'] = await this.getBrands();
+    // res['brands'] = await this.getBrands();
 
     return res
       ? Promise.resolve(res)
@@ -170,9 +170,13 @@ export class CarService {
           name: item['name'],
           brand: item['brand'],
           category: item['category'],
+          generation: item['generation'],
           url: item['url'],
+          average_no_reactions: item['average_no_reactions'],
           average: item['average'],
           val_length: item['val_length'],
+          likes_length: item['likes_length'],
+          dislikes_length: item['dislikes_length'],
           active: item['active'],
           review: item['review']
         };
@@ -187,9 +191,14 @@ export class CarService {
   }
 
   public async setModel(req: any, id?: string): Promise<Object> {
-    let exists = id ? await this.getModels({ _id: id }) : null;
+    let foundById;
+    
+    
+    if (id) {
+      foundById = await this.getModels({ _id: id });
+    }
 
-    if (id && !exists) {
+    if (id && !foundById) {
       return Promise.reject({ statusCode: 404 });
     }
 
@@ -197,6 +206,23 @@ export class CarService {
       req.body.data = this.cryptoService.decodeJwt(req.body.data);
     } catch (error) {
       return Promise.reject({ statusCode: 401 });
+    }
+
+    const sanitizedName = this.utils.sanitizeText(req.body.data['name']);
+
+    if (!id) {
+      const foundByUrl = await this.getModels({ url: sanitizedName });
+      let foundActiveItem = false;
+
+      foundByUrl.forEach(item => {
+        if ((item.active && !item.review) && (req.body.data['brand'] && req.body.data['brand']['url'] === item.brand.url)) {
+          foundActiveItem = true;
+        }
+      });
+
+      if (foundActiveItem) {
+        return Promise.reject({ statusCode: 409 });
+      }
     }
 
     if (req.body.data['brand']) {
@@ -209,16 +235,35 @@ export class CarService {
 
     let res = {};
 
-    if (exists) {
-      let modifiedPost = this.customerService.setCreatedAndModifierUser(req, exists);
-      modifiedPost['url'] = this.utils.sanitizeText(modifiedPost.name);
+    if (foundById) {
+      let modifiedPost = this.customerService.setCreatedAndModifierUser(req, foundById);
+      if (sanitizedName) {
+        modifiedPost['url'] = sanitizedName;
+      }
+      
+      if (!modifiedPost['average_no_reactions']) {
+        modifiedPost['average_no_reactions'] = foundById[0] && foundById[0]['average_no_reactions'] ? foundById[0]['average_no_reactions'] : 0;
+      }
+
+      if (modifiedPost['likes_length'] === undefined || modifiedPost['likes_length'] === null
+          || !modifiedPost['dislikes_length'] === undefined || !modifiedPost['dislikes_length'] === null) {
+        modifiedPost['likes_length'] = foundById[0] && foundById[0]['likes_length'] ? foundById[0]['likes_length'] : 0;
+        modifiedPost['dislikes_length'] = foundById[0] && foundById[0]['dislikes_length'] ? foundById[0]['dislikes_length'] : 0;
+      }
+      
+      modifiedPost['average'] = this.updateWithReactionsAverage(modifiedPost);
       res['saved'] = await modelModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
       // atualiza duplicações na collection de versoes
       const newModel = {
         _id: res['saved']._id,
         name: res['saved'].name,
         url: res['saved'].url,
+        generation: res['saved'].generation,
         brand: res['saved'].brand,
+        average: res['saved'].average,
+        average_no_reactions: res['saved'].average_no_reactions,
+        likes_length: res['saved'].likes_length,
+        dislikes_length: res['saved'].dislikes_length,
         active: res['saved'].active,
         review: res['saved'].review
       };
@@ -226,10 +271,13 @@ export class CarService {
       // atualiza duplicações na collection de opinioes de carros
       this.customerService.updateMany(opinionCarModel, ['model'], res['saved'], newModel);
     } else {
-      let createdPost = this.customerService.setCreatedAndModifierUser(req, exists, modelModel);
-      createdPost['url'] = this.utils.sanitizeText(createdPost.name);
+      let createdPost = this.customerService.setCreatedAndModifierUser(req, foundById, modelModel);
+      createdPost['url'] = sanitizedName;
       createdPost['average'] = 0;
+      createdPost['average_no_reactions'] = 0;
       createdPost['val_length'] = 0;
+      createdPost['likes_length'] = 0;
+      createdPost['dislikes_length'] = 0;
       res['saved'] = await createdPost.save();
     }
 
@@ -241,7 +289,7 @@ export class CarService {
   public async deleteModel(id: string): Promise<Object> {
     let res = {};
     res['removed'] = await modelModel.findByIdAndDelete({ _id: id });
-    res['models'] = await this.getModels();
+    // res['models'] = await this.getModels();
 
     return res
       ? Promise.resolve(res)
@@ -324,8 +372,6 @@ export class CarService {
         gearbox: res['saved'].gearbox,
         years: res['saved'].years,
         complement: res['saved'].complement,
-        image: res['saved'].image,
-        thumb: res['saved'].thumb,
         active: res['saved'].active,
         review: res['saved'].review
       };
@@ -347,7 +393,7 @@ export class CarService {
   public async deleteVersion(id: string): Promise<Object> {
     let res = {};
     res['removed'] = await versionModel.findByIdAndDelete({ _id: id });
-    res['versions'] = await this.getVersion();
+    // res['versions'] = await this.getVersion();
 
     return res
       ? Promise.resolve(res)
@@ -389,7 +435,6 @@ export class CarService {
   
     const updateBrandPayload = {
       name: carBrand[0]['name'],
-      image: carBrand[0]['image'],
       active: carBrand[0]['active'],
       review: carBrand[0]['review'],
       average: newBrandAverage,
@@ -415,11 +460,11 @@ export class CarService {
     switch (operation) {
       case 'set':
         newModelValLength = carModel[0]['val_length'] + 1;
-        newModelAverage = ((carModel[0]['average'] * carModel[0]['val_length']) + modelAverage) / newModelValLength;
+        newModelAverage = ((carModel[0]['average_no_reactions'] * carModel[0]['val_length']) + modelAverage) / newModelValLength;
         break;
       case 'delete':
         newModelValLength = carModel[0]['val_length'] - 1;
-        newModelAverage = ((carModel[0]['average'] * carModel[0]['val_length']) - modelAverage) / newModelValLength;
+        newModelAverage = ((carModel[0]['average_no_reactions'] * carModel[0]['val_length']) - modelAverage) / newModelValLength;
         break;
     }
 
@@ -442,7 +487,7 @@ export class CarService {
       brand: carModel[0]['brand'],
       active: carModel[0]['active'],
       review: carModel[0]['review'],
-      average: newModelAverage,
+      average_no_reactions: newModelAverage,
       val_length: newModelValLength
     };
 
@@ -456,5 +501,19 @@ export class CarService {
       modelPayload['user'] = carModel[0]['modified_by'];
     }
     this.setModel(modelPayload, modelId);
+  }
+
+  public updateWithReactionsAverage(payload: any): number {
+    const qtdAverageItens = 7;
+    const currentAverageTotal = payload['average_no_reactions'] * qtdAverageItens;
+
+    const totalGoodReactions = payload['likes_length'] || 0;
+    const totalBadReactions = payload['dislikes_length'] || 0;
+    const totalReactions = totalBadReactions + totalGoodReactions;
+    const showDefault = totalReactions === 0 || (totalBadReactions === totalGoodReactions);
+    const reactionAverage = showDefault ? 2.5 : ((totalGoodReactions * 100) / totalReactions) / 20;
+
+    const newAverage = (currentAverageTotal + reactionAverage) / (qtdAverageItens + 1);
+    return newAverage;
   }
 }

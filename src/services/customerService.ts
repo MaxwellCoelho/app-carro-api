@@ -16,13 +16,15 @@ export class CustomerService {
   ) { }
 
   // CUSTOMERS ---------------------------------------------------
-  public async getCustomers(filter?: any, resumed?: boolean): Promise<any> {
+  public async getCustomers(filter?: any, resumed?: boolean, mySort?: any, myPagination?: any): Promise<any> {
     let myFilter = filter ? this.utils.convertIdToObjectId(filter) : {};
-    let mySort = { 'role.level': 'asc', name: 'asc' }
+    let sorted = mySort ? mySort : { 'role.level': 'asc', name: 'asc' };
     let res;
+    const offset = myPagination && myPagination.page ? (myPagination.page - 1) * myPagination.perpage : 0;
+    const pageSize = myPagination && myPagination.page ? myPagination.perpage : null;
     
     try {
-      res = await customerModel.find(myFilter).sort(mySort);
+      res = await customerModel.find(myFilter).sort(sorted).skip(offset).limit(pageSize);
     } catch (error) {
       Promise.reject({ statusCode: 404 });
     }
@@ -33,7 +35,9 @@ export class CustomerService {
       if (resumed) {
         const resumedObj = {
           _id: item['_id'],
-          name: item['name']
+          name: item['name'],
+          url: item['url'],
+          avatar: item['avatar']
         };
         resumedArray.push(resumedObj);
       }
@@ -83,12 +87,18 @@ export class CustomerService {
         }
       }
 
+      if (!idExists[0]['url']) {
+        modifiedPost['url'] = `${this.uDate.simpleStamp()}-${this.utils.sanitizeText(modifiedPost['name'])}`;
+      }
+
       res['saved'] = await customerModel.findByIdAndUpdate({ _id: id }, modifiedPost, { new: true });
       // se nao for atualização de favoritos atualiza duplicações nas outras collections
       if (!req.body.data['favorites']) {
         const newCustomer = {
           _id: res['saved']._id,
-          name: res['saved'].name
+          name: res['saved'].name,
+          url: res['saved'].url,
+          avatar: res['saved'].avatar
         };
         const modelsToUpdate = [
           roleModel, categoryModel, brandModel, modelModel, versionModel, opinionCarModel, opinionBrandModel
@@ -100,6 +110,21 @@ export class CustomerService {
     } else {
       const createdPost = this.setCreatedAndModifierUser(req, idExists, customerModel);
       createdPost.password = this.cryptoService.encriptPassword(createdPost.password);
+
+      if (!createdPost.role) {
+        let newRole;
+    
+        await this.getRoles({ level: 3 }).then(role => {
+          if (role[0]) {
+            newRole = {_id: role[0]['_id'], name: role[0]['name'], level: role[0]['level']};
+          }
+        });
+
+        createdPost.role = newRole;
+      }
+
+      createdPost['url'] = `${this.uDate.simpleStamp()}-${this.utils.sanitizeText(createdPost['name'])}`;
+
       res['saved'] = await createdPost.save();
     }
 
@@ -113,7 +138,7 @@ export class CustomerService {
   public async deleteCustomer(id: string): Promise<Object> {
     let res = {};
     res['removed'] = await customerModel.findByIdAndDelete({ _id: id });
-    res['customers'] = await this.getCustomers();
+    // res['customers'] = await this.getCustomers();
 
     return res
       ? Promise.resolve(res)
@@ -192,7 +217,7 @@ export class CustomerService {
       };
 
       if (req.user) {
-        postPayload.modified_by = {_id: req.user._id, name: req.user.name};
+        postPayload.modified_by = {_id: req.user._id, name: req.user.name, url: req.user.url, avatar: req.user.avatar};
       }
     } else {
       postPayload = new model(req.body.data);
@@ -200,7 +225,7 @@ export class CustomerService {
       postPayload.modified = timeStamp;
 
       if (req.user) {
-        postPayload.created_by = {_id: req.user._id, name: req.user.name};
+        postPayload.created_by = {_id: req.user._id, name: req.user.name, url: req.user.url, avatar: req.user.avatar};
         postPayload.modified_by = postPayload.created_by;
       }
     }

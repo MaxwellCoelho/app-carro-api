@@ -36,6 +36,8 @@ export class AuthService {
     return {
       _id: res['_id'],
       name: res['name'],
+      url: res['url'],
+      avatar: res['avatar'],
       email: res['email'],
       favorites: res['favorites'],
       active: res['active'],

@@ -4,7 +4,8 @@ import { CarService, CryptoService } from '../services';
 import { ResponseModule } from '../architecture/responseModule';
 import { config } from '../config/config';
 
-import { UDate } from '../utils/udate';
+import { UDate, Utils } from '../utils';
+import { CustomRequest } from "../architecture/definitionfile"
 
 export class CarController extends ResponseModule {
   private conf = config;
@@ -13,6 +14,7 @@ export class CarController extends ResponseModule {
       private carService: CarService,
       public cryptoService: CryptoService,
       private uDate: UDate,
+      private utils: Utils,
     ) {
       super();
   }
@@ -30,7 +32,7 @@ export class CarController extends ResponseModule {
     }
   }
 
-  public async saveCategory(req: Request, res: Response) {
+  public async saveCategory(req: CustomRequest, res: Response) {
     if (!req.isAuthenticated()) {
       return this.unauthorized(res);
     }
@@ -46,7 +48,7 @@ export class CarController extends ResponseModule {
     }
   }
 
-  public async removeCategory(req: Request, res: Response) {
+  public async removeCategory(req: CustomRequest, res: Response) {
     if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }
@@ -76,6 +78,26 @@ export class CarController extends ResponseModule {
     }
   }
 
+  public async returnFilteredBrand(req: Request, res: Response) { 
+    try {
+      req.body.data = this.cryptoService.decodeJwt(req.body.data);
+    } catch (error) {
+      return Promise.reject({ statusCode: 401 });
+    }
+
+    let myFilter = req.body.data;
+    let mySort = this.utils.returnSortObject(req);
+    let pagination = this.utils.returnPaginationObject(req);
+
+    try {
+      const responseService = await this.carService.getBrands(myFilter, mySort, pagination);
+      return this.success(res, { brands: responseService });
+    } catch (error) {
+      this.uDate.timeConsoleLog('Erro ao chamar a api', error);
+      return this.errorHandler(error, res);
+    }
+  }
+
   public async saveBrand(req: Request, res: Response) {
     const id: string = req.params.id;
 
@@ -88,7 +110,7 @@ export class CarController extends ResponseModule {
     }
   }
 
-  public async removeBrand(req: Request, res: Response) {
+  public async removeBrand(req: CustomRequest, res: Response) {
     if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }
@@ -126,9 +148,11 @@ export class CarController extends ResponseModule {
     }
 
     let myFilter = req.body.data;
+    let mySort = this.utils.returnSortObject(req);
+    let pagination = this.utils.returnPaginationObject(req);
 
     try {
-      const responseService = await this.carService.getModels(myFilter);
+      const responseService = await this.carService.getModels(myFilter, false, mySort, pagination);
       return this.success(res, { models: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -148,7 +172,7 @@ export class CarController extends ResponseModule {
     }
   }
 
-  public async removeModel(req: Request, res: Response) {
+  public async removeModel(req: CustomRequest, res: Response) {
     if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }
@@ -186,9 +210,11 @@ export class CarController extends ResponseModule {
     }
 
     let myFilter = req.body.data;
+    let mySort = this.utils.returnSortObject(req);
+    let pagination = this.utils.returnPaginationObject(req);
 
     try {
-      const responseService = await this.carService.getVersion(myFilter);
+      const responseService = await this.carService.getVersion(myFilter, false, mySort, pagination);
       return this.success(res, { versions: responseService });
     } catch (error) {
       this.uDate.timeConsoleLog('Erro ao chamar a api', error);
@@ -208,7 +234,7 @@ export class CarController extends ResponseModule {
     }
   }
 
-  public async removeVersion(req: Request, res: Response) {
+  public async removeVersion(req: CustomRequest, res: Response) {
     if (!req.isAuthenticated() || (req.isAuthenticated() && req.user['role'].level > 1)) {
       return this.unauthorized(res);
     }

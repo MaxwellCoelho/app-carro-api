@@ -19,5 +19,30 @@ export class Utils {
         });
         return myFilter;
     }
+
+    public returnPaginationObject(req: any): object {
+        let pagination = {}; 
+        if (req.query['page'] && req.query['perpage']) {
+            pagination = {
+                page: Number(req.query['page']),
+                perpage: Number(req.query['perpage'])
+            }
+        } 
+        return pagination;
+    }
+
+    public returnSortObject(req: any): object {
+        let mySort;
+        const queryArr = req.query ? Object.entries(req.query) : [];
+        
+        queryArr.forEach(param => {
+            if (param[0].includes('sort.')) {
+                if (!mySort) { mySort = {}; }
+                const paramName = param[0].split('.')[1];
+                mySort[paramName] = param[1];
+            }
+        });
+        return mySort;
+    }
     
 }

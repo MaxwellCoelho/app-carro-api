@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as session from "express-session";
 
 const MongoStore = require('connect-mongo');
-const mongoUri = `mongodb://${process.env.MONGO_USER}:${encodeURIComponent(process.env.MONGO_PWD)}@${process.env.MONGO_IP}:27017/appcarrodb?${process.env.MONGO_PARAMS}`;
+const mongoUri = `mongodb://${process.env.MONGO_USER}:${encodeURIComponent(process.env.MONGO_PWD)}@${process.env.MONGO_IP}:${process.env.MONGO_PORT}/appcarrodb?${process.env.MONGO_PARAMS}`;
 
 const sessionMiddleware = (req: Request, res: Response, next: NextFunction) => {
     return session({
