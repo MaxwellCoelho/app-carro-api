@@ -45,7 +45,7 @@ import {
 } from './controllers';
 
 // Conexão com base de dados
-const mongoUri = `mongodb://${process.env.MONGO_USER}:${encodeURIComponent(process.env.MONGO_PWD)}@${process.env.MONGO_IP}:27017/appcarrodb?${process.env.MONGO_PARAMS}`;
+const mongoUri = `mongodb://${process.env.MONGO_USER}:${encodeURIComponent(process.env.MONGO_PWD)}@${process.env.MONGO_IP}:${process.env.MONGO_PORT}/appcarrodb?${process.env.MONGO_PARAMS}`;
 mongoose.connect(mongoUri)
     .then(() => console.log('Connected to database'))
     .catch(err => console.log(err));
