@@ -6,6 +6,7 @@ WORKDIR /
 
 COPY package.json .
 
+RUN npm install typescript@4.1.6 -g
 RUN npm install
 
 COPY . .
