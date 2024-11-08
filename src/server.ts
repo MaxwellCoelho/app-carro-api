@@ -95,7 +95,7 @@ server.use(bodyParser.urlencoded({ extended: false }));
 server.use((req, res, next) => {
     req.setTimeout(20000, function(){ req.destroy(); });
 
-    const allowedOrigins = ['http://localhost:4200', 'https://krro.com.br', 'https://www.krro.com.br'];
+    const allowedOrigins = ['http://localhost:4200', 'https://krro.com.br', 'https://www.krro.com.br', 'https://app-carro-production.up.railway.app'];
     const origin = req.headers.origin;
     if (allowedOrigins.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
