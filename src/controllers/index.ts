@@ -5,3 +5,4 @@ export { OpinionController } from './opinionController';
 export { TestController } from './testController';
 export { BestController } from './bestController';
 export { FeedbackController } from './feedbackController';
+export { AdsController } from './adsController';

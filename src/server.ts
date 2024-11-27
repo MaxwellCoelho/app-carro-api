@@ -18,7 +18,8 @@ import {
     OpinionRoutes,
     AuthRoutes,
     BestRoutes,
-    FeedbackRoutes
+    FeedbackRoutes,
+    AdsRoutes
 } from './routes';
 
 // Services
@@ -30,7 +31,8 @@ import {
     OpinionService,
     AuthService,
     BestService,
-    FeedbackService
+    FeedbackService,
+    AdsService
 } from './services';
 
 // Controllers
@@ -41,7 +43,8 @@ import {
     OpinionController,
     AuthController,
     BestController,
-    FeedbackController
+    FeedbackController,
+    AdsController
 } from './controllers';
 
 // Conexão com base de dados
@@ -63,6 +66,7 @@ const opinionService = new OpinionService(cryptoService, customerService, carSer
 const authService = new AuthService(cryptoService, customerService);
 const bestService = new BestService(carService, utils);
 const feedbackService = new FeedbackService(cryptoService, utils, customerService);
+const adsService = new AdsService(cryptoService, utils, customerService);
 
 // Instancia dos componentes injetáveis
 const testController = new TestController(testService, uDate);
@@ -72,6 +76,7 @@ const opinionController = new OpinionController(opinionService, cryptoService, u
 const authController = new AuthController(authService, cryptoService, uDate);
 const bestController = new BestController(bestService, uDate, utils, cryptoService);
 const feedbackController = new FeedbackController(feedbackService, uDate);
+const adsController = new AdsController(adsService, cryptoService, uDate, utils);
 
 // INSTANCIA DAS ROTAS
 const testRoute = new TestRoutes(testController);
@@ -81,6 +86,7 @@ const opinionRoute = new OpinionRoutes(opinionController);
 const authRoute = new AuthRoutes(authController);
 const bestRoute = new BestRoutes(bestController);
 const feedbackRoute = new FeedbackRoutes(feedbackController);
+const adsRoute = new AdsRoutes(adsController);
 
 const server = express();
 
@@ -117,6 +123,7 @@ opinionRoute.route(server);
 authRoute.route(server);
 bestRoute.route(server);
 feedbackRoute.route(server);
+adsRoute.route(server);
 
 // Rodar frontend buildado do projeto app-carro
 // server.use(express.static('www'));

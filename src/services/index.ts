@@ -6,3 +6,4 @@ export { OpinionService } from './opinionService';
 export { AuthService } from './authService';
 export { BestService } from './bestService';
 export { FeedbackService } from './feedbackService';
+export { AdsService } from './adsService';
